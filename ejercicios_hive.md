@@ -1,8 +1,7 @@
 # <img src="Apache_Hive_logo.svg" alt="Hive Logo" width="30"/> HIVE
 
-- [<img src="Apache_Hive_logo.svg" alt="Hive Logo" width="30"/> HIVE](#-hive)
-  - [Preguntas](#preguntas)
-  - [Ejercicios](#ejercicios)
+- [Preguntas](#preguntas)
+- [Ejercicios](#ejercicios)
 
 ## Preguntas
 
