@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Ejercicios Spook</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension ms-toolsai.jupyter */
+/* These classnames are inherited from bootstrap, but are present in most notebook renderers */
+
+.alert {
+    width: auto;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.alert > *:last-child {
+    margin-bottom: 0;
+}
+#preview > .alert:last-child {
+    /* Prevent this being set to zero by the default notebook stylesheet */
+    padding-bottom: 1em;
+}
+
+.alert-success {
+    /* Note there is no suitable color available, so we just copy "info" */
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-info {
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-warning {
+    background-color: var(--theme-warning-background);
+    color: var(--theme-warning-foreground);
+}
+.alert-danger {
+    background-color: var(--theme-error-background);
+    color: var(--theme-error-foreground);
+}
+
+</style>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="ejercicios-spook">Ejercicios Spook</h1>
+<h2 id="creación-de-la-tabla-en-mysql">Creación de la tabla en mySQL</h2>
+<p>En la terminal escribimos <code>$ mysql -u root -p</code> y en password ponemos cloudera para entrar en shell de mysql.
+Se nos pide:</p>
+<ol>
+<li>
+<p>ver las bases de datos</p>
+</li>
+<li>
+<p>crear una base de datos que importaremos a hive</p>
+</li>
+<li>
+<p>crear una tabla y añadir algunas filas</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\spook\filas.png" alt="filas"></p>
+</li>
+<li>
+<p>comprobar que todo se ha hecho bien</p>
+</li>
+</ol>
+<p>Para todo ello, escribimos lo siguiente:</p>
+<pre><code class="language-SQL"><span class="hljs-keyword">SHOW</span> DATABASES;
+<span class="hljs-keyword">CREATE</span> DATABASE pruebadb;
+USE pruebadb;
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> tabla_prueba (nombre <span class="hljs-type">varchar</span>(<span class="hljs-number">30</span>), edad <span class="hljs-type">int</span>);
+<span class="hljs-keyword">SHOW</span> TABLES; <span class="hljs-comment">-- comprueba que se ha creado</span>
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> tabla_prueba <span class="hljs-keyword">VALUES</span> (&quot;Alberto&quot;, <span class="hljs-number">22</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> tabla_prueba <span class="hljs-keyword">VALUES</span> (&quot;Luis&quot;, <span class="hljs-number">23</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> tabla_prueba <span class="hljs-keyword">VALUES</span> (&quot;Pablo&quot;, <span class="hljs-number">24</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> tabla_prueba <span class="hljs-keyword">VALUES</span> (&quot;Carlos&quot;, <span class="hljs-number">25</span>);
+<span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> tabla_prueba;
+</code></pre>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\spook\salidamysql.png" alt="salidamysql"></p>
+<h2 id="creación-de-la-tabla-en-hive">Creación de la tabla en Hive</h2>
+<p>Ahora se nos pide crear la estrucrura necesaria en Hive para luego hacer la importación con Skoop. Los pasos son</p>
+<ol>
+<li>acceder a Hive</li>
+<li>crear la base de datos, acceder a ella y comprobar que está en la warehouse de hive</li>
+<li>crear la estructura</li>
+<li>comprobar que se ha creado con éxito</li>
+</ol>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\spook\hive1.png" alt="hive1"></p>
+<pre><code class="language-SQL"><span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> tabla_prueba_hive;
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> tabla_prueba_hive
+(nombre string,
+edad <span class="hljs-type">int</span>
+)
+<span class="hljs-type">ROW</span> FORMAT DELIMITED
+STORED <span class="hljs-keyword">AS</span> TEXTFILE;
+<span class="hljs-keyword">SHOW</span> TABLES;
+</code></pre>
+<h2 id="importamos-la-tabla-con-sqoop">Importamos la tabla con Sqoop</h2>
+<p>Primero se nos pide ejecutar unos comandos de configuración.</p>
+<pre><code class="language-shell">sudo mkdir /var/lib/accumulo 
+ACCUMULO_HOME=&#x27;/var/lib/accumulo&#x27; 
+export ACCUMULO_HOME 
+</code></pre>
+<p>Para comprobar que sqoop está conectado a mysql escribimos:</p>
+<p><code>$sqoop list-databases --connect jdbc:mysql://localhost --username root --password cloudera </code></p>
+<p>Listamos la tabla de la base de datos de mySQL:</p>
+<p><code>$sqoop list-tables --connect jdbc:mysql://localhost/pruebadb --username root --password cloudera</code></p>
+<p>Ahora ya realizamos la importación. Se nos pide usar <code>jdbc:mysql://localhost/bbddMysql</code> como conector y utilizar un solo mapper.</p>
+<blockquote>
+<p>Antes de realizar la importación, la tabla en Hive está vacía con la estructura
+<img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\spook\preimport.png" alt="preimport"></p>
+</blockquote>
+<p><code>$sqoop import --connect jdbc:mysql://localhost/pruebadb --table tabla_prueba --username root --password cloudera -m 1 --hive-import --hive-overwrite --hive-table spookdb.tabla_prueba_hive</code></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\spook\postimport.png" alt="postimport"></p>
+<blockquote>
+<p>La última terminal muestra la tabla ya importada en el entorno Hive.</p>
+</blockquote>
+
+        <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+        
+    </body>
+    </html>
