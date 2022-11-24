@@ -1,4 +1,4 @@
-# Ejercicios Spook
+# Ejercicios Sqoop
 
 ## Creación de la tabla en mySQL
 En la terminal escribimos `$ mysql -u root -p` y en password ponemos cloudera para entrar en shell de mysql.
