@@ -1,7 +1,8 @@
 # <img src="Apache_Hive_logo.svg" alt="Hive Logo" width="30"/> HIVE
 
-- [Preguntas](#preguntas)
-- [Ejercicios](#ejercicios)
+- [ HIVE](#-hive)
+  - [Preguntas](#preguntas)
+  - [Ejercicios](#ejercicios)
 
 ## Preguntas
 
@@ -190,10 +191,9 @@ FROM iris
 
 ```
 SELECT clase, p_length, s_length, p_width,
---COUNT DISTINCT p_length, 
+COUNT(p_length) OVER (PARTITION BY p_length), 
 MAX(s_length) OVER (PARTITION BY clase),
 AVG(p_width) OVER (PARTITION BY clase)
 FROM iris
 ORDER BY clase, s_length DESC;
 ```
->duda
