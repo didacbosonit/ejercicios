@@ -196,11 +196,12 @@ FROM iris
 </code></pre>
 <p><strong>21. Utilizando funciones de ventanas, seleccionar la clase, p_length, s_length, p_width, el número de valores distintos de p_length en todo el dataset, el valor máximo de s_length por clase y la media de p_width por clase, ordenado por clase y s_length de manera descendente.</strong></p>
 <pre><code>SELECT clase, p_length, s_length, p_width,
-COUNT(p_length) OVER (PARTITION BY p_length), 
+COUNT(p_length) OVER (PARTITION BY p_length),
+COUNT(distinct p_length) OVER (PARTITION BY p_length),
 MAX(s_length) OVER (PARTITION BY clase),
 AVG(p_width) OVER (PARTITION BY clase)
 FROM iris
-ORDER BY clase, s_length DESC;
+ORDER BY clase, p_length DESC;
 </code></pre>
 
         <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>

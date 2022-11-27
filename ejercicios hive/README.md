@@ -191,9 +191,10 @@ FROM iris
 
 ```
 SELECT clase, p_length, s_length, p_width,
-COUNT(p_length) OVER (PARTITION BY p_length), 
+COUNT(p_length) OVER (PARTITION BY p_length),
+COUNT(distinct p_length) OVER (PARTITION BY p_length),
 MAX(s_length) OVER (PARTITION BY clase),
 AVG(p_width) OVER (PARTITION BY clase)
 FROM iris
-ORDER BY clase, s_length DESC;
+ORDER BY clase, p_length DESC;
 ```
