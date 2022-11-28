@@ -77,6 +77,15 @@
     </head>
     <body class="vscode-body vscode-light">
         <h1 id="ejercicios">Ejercicios</h1>
+<ul>
+<li><a href="#ejercicios">Ejercicios</a>
+<ul>
+<li><a href="#usando-la-shell-de-hbase">Usando la SHELL de Hbase</a></li>
+<li><a href="#acceso-a-datos">Acceso a datos</a></li>
+<li><a href="#usando-el-api-de-desarrollador">Usando el API de desarrollador</a></li>
+</ul>
+</li>
+</ul>
 <h2 id="usando-la-shell-de-hbase">Usando la SHELL de Hbase</h2>
 <ol>
 <li>
@@ -151,6 +160,7 @@
 </li>
 <li>
 <p>Creamos una tabla llamada mundo, con dos familias de columnas; ciudad y población.</p>
+<p><code>create 'mundo', 'ciudad', 'poblacion'</code></p>
 </li>
 <li>
 <p>Obtener la fila 1000 de la tabla mundo. Debería no existir.</p>
@@ -180,26 +190,33 @@
 </li>
 <li>
 <p>Comprueba que la tabla se ha creado correctamente.</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\hbase\2.5.png" alt="2.5"></p>
 </li>
 <li>
 <p>Añade ahora a esa fila, otros dos descriptores; uno para las coordenadas del eje X y otro para las coordenadas del eje Y. Los valores que debes introducir son: 42°49′00″N y 1°39′00″O respectivamente. Para no tener problemas con el formato de las coordenadas introducir los números así: 42.49.00.</p>
-<p><code>put 'mundo', '10', 'coordenadasX', '42.49.00'</code></p>
-<p><code>put 'mundo', '10', 'coordenadasY, '01.39.00'</code></p>
+<p><code>put 'mundo', '10', 'ciudad:coordenadasX', '42.49.00'</code></p>
+<p><code>put 'mundo', '10', 'ciudad:coordenadasY', '01.39.00'</code></p>
 </li>
 <li>
 <p>Además, añade a esa fila la población de pamplona: 197 138 habitantes.</p>
-<p><code>put 'mundo', '10', 'poblacion' '197138'</code></p>
+<p><code>put 'mundo', '10', 'poblacion', '197138'</code></p>
 </li>
 <li>
 <p>Comprueba finalmente que los datos se han insertado correctamente.</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\hbase\2.8.png" alt="2.8"></p>
 </li>
 <li>
 <p>Supongamos que la población de Pamplona ha cambiado en los últimos años y hay que actualizar la base de datos. Ahora Pamplona debe tener 200.000 habitantes.</p>
-<p><code>put 'mundo', '10', 'poblacion' '200000'</code></p>
+<p><code>put 'mundo', '10', 'poblacion', '200000'</code></p>
 </li>
 <li>
 <p>Obtener la fila con clave 10 (Pamplona), mostrando los 3 últimos valores de habitantes que han sido almacenados.</p>
+<blockquote>
+<p>Por defecto tengo que se guarde 1 versión solamente, así que primero editamos esta característica.</p>
+</blockquote>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\hbase\2.10.png" alt="2.10"></p>
 <p><code>get 'mundo', '10', {COLUMN =&gt; 'poblacion', VERSIONS =&gt; 3}</code></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\hbase\2.10-1.png" alt="2.10-1"></p>
 </li>
 <li>
 <p>Borrar los campos de coordenadas.</p>
@@ -208,6 +225,7 @@
 </li>
 <li>
 <p>Comprueba que se han borrado dichos campos.</p>
+<p><code>get 'mundo', '10'</code></p>
 </li>
 <li>
 <p>A continuación, borra la fila entera correspondiente a Pamplona (key = 10)</p>
@@ -215,8 +233,10 @@
 </li>
 <li>
 <p>Comprueba que la operación se ha realizado correctamente.</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\hbase\2.14.png" alt="2.14"></p>
 </li>
 </ol>
+<h2 id="usando-el-api-de-desarrollador">Usando el API de desarrollador</h2>
 
         <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         
