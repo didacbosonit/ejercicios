@@ -188,16 +188,10 @@ output: <span class="hljs-type">String</span> = <span class="hljs-type">Hl</span
 <p>Dado una lista de números, devuelva una nueva lista con los números ordenados de menor a mayor.</p>
 <pre><code class="language-Scala"><span class="hljs-keyword">val</span> lista = <span class="hljs-type">List</span>(<span class="hljs-number">3</span>, <span class="hljs-number">5</span>, <span class="hljs-number">7</span>, <span class="hljs-number">12</span>, <span class="hljs-number">9</span>, <span class="hljs-number">2</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sumarLista</span></span>(lista: <span class="hljs-type">List</span>[<span class="hljs-type">Int</span>]): <span class="hljs-type">Int</span> = {
-  <span class="hljs-keyword">var</span> suma = <span class="hljs-number">0</span>
-  <span class="hljs-keyword">for</span> (numero &lt;- lista) {
-    suma += numero
-  }
-  <span class="hljs-keyword">return</span> suma
-}
+<span class="hljs-keyword">val</span> sortedNumbers = lista.sortWith(_ &lt; _)
 
-scala&gt; println(sumarLista(lista))
-<span class="hljs-number">38</span>
+scala&gt; println(sortedNumbers)
+<span class="hljs-type">List</span>(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>, <span class="hljs-number">7</span>, <span class="hljs-number">9</span>, <span class="hljs-number">12</span>)
 </code></pre>
 </li>
 <li>

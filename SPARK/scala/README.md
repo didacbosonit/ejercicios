@@ -118,16 +118,10 @@
     ```Scala
     val lista = List(3, 5, 7, 12, 9, 2)
 
-    def sumarLista(lista: List[Int]): Int = {
-      var suma = 0
-      for (numero <- lista) {
-        suma += numero
-      }
-      return suma
-    }
+    val sortedNumbers = lista.sortWith(_ < _)
 
-    scala> println(sumarLista(lista))
-    38
+    scala> println(sortedNumbers)
+    List(2, 3, 5, 7, 9, 12)
     ```
 
 10. Define una clase Persona que tenga los atributos nombre y edad, y un método esMayorEdad que devuelva true si la persona tiene 18 años o más y false en caso contrario. Luego, crea una instancia de la clase Persona y usa el método esMayorEdad para verificar si la persona es mayor de edad. 
