@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Spark Exercises</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension ms-toolsai.jupyter */
+/* These classnames are inherited from bootstrap, but are present in most notebook renderers */
+
+.alert {
+    width: auto;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.alert > *:last-child {
+    margin-bottom: 0;
+}
+#preview > .alert:last-child {
+    /* Prevent this being set to zero by the default notebook stylesheet */
+    padding-bottom: 1em;
+}
+
+.alert-success {
+    /* Note there is no suitable color available, so we just copy "info" */
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-info {
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-warning {
+    background-color: var(--theme-warning-background);
+    color: var(--theme-warning-foreground);
+}
+.alert-danger {
+    background-color: var(--theme-error-background);
+    color: var(--theme-error-foreground);
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="spark-exercises">Spark Exercises</h1>
+<p>Basado en el pdf EXERCISES SPARK BIT - EN</p>
+<h2 id="exercise-using-the-spark-shell-module-1">Exercise: Using the Spark Shell (module 1)</h2>
+<p>The purpose of this exercise is to work with the Spark Shell in Scala to read a file in a RDD.
+Tasks to be done:</p>
+<ol>
+<li>
+<p>Start the Spark Shell for Scala and get familiar with the information that appears on the
+screen (Infos, warnings, Scala’s version, Spark’s version …). It will take a little while to
+get started.</p>
+<blockquote>
+<p>a. spark-shell</p>
+</blockquote>
+</li>
+<li>
+<p>Check if a context “sc” has been successfully created as we can see in the documentation</p>
+<blockquote>
+<p>a. Escribir “sc”</p>
+</blockquote>
+<blockquote>
+<p>b. You should see something like this in your screen:
+res0:org.apache.spark.SparkContext= org.apache.spark.SparkContext@”alphanum”</p>
+</blockquote>
+</li>
+<li>
+<p>Using the auto-complete command on SparkContext you can see a list of available
+methods. The Auto-complete function consists of pressing tabulator key after typing the
+SparkContext object followed by a dot.
+<img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module1.png" alt="module1"></p>
+</li>
+<li>
+<p>To exit the Shell you can type “exit” or you can press CTRL + C.</p>
+</li>
+</ol>
+<h2 id="exercise-starting-with-rdds-module-2">Exercise: Starting with RDDs (module 2)</h2>
+<p>The objective of this exercise is to practice with RDD’s trough Spark Shell, for which we will use
+external files.</p>
+<p>A common practice testing phase of data analitics is to analyze small files that are subsets of
+related datasets to be used in production. Sometimes, these files are not physically in any
+node of the cluster, so it will be necessary to import them in some way</p>
+<p>A simple way to do these transfers between our Host and the VM/Cluster is through tools like
+Winscp (<a href="https://winscp.net/eng/download.php">https://winscp.net/eng/download.php</a>).
+Another option to do this is as in the previous exercises, in other words, through a shared folder
+with the VM or copying the files directly to the VM.</p>
+<h3 id="a-exploration-of-plain-file-1">A. Exploration of plain file 1</h3>
+<p>Tasks to be done:</p>
+<blockquote>
+<p>Al trabajar desde el propio Windows, los primeros 5 pasos no los realizo tal y como dice.</p>
+</blockquote>
+<ol>
+<li>
+<p>Start the Spark Shell if you have exited in the previous exercise.</p>
+</li>
+<li>
+<p>For this exercise we are going to work with local data
+To access to a local file, we will type, before the path, the word “file:”</p>
+</li>
+<li>
+<p>Create a folder called BIT in “/home” in a way in which it will be created a path
+“/home/BIT” and copy inside it every data file necessary to the course:
+Copy ‘data_spark’ folder to the virtual machine as in other occasions y get
+familiar with their content</p>
+</li>
+<li>
+<p>Inside ‘data_spark’ you will find the file ‘relato.txt’. Copy that file to the virtual machine
+in the next path: “/home/BIT/data/relato.txt”</p>
+</li>
+<li>
+<p>Visualize the file with a text editor like ‘gedit’ or ‘vi’ through the shell with ‘cat’
+command.</p>
+</li>
+<li>
+<p>Create a RDD called “relato”, it RDD should contain the content of the file using ‘textFile’
+method</p>
+<p><code>val relato = spark.read.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\relato.txt&quot;)</code></p>
+</li>
+<li>
+<p>Once you have done it, notes that the RDD has not yet been created. This will happen
+when we will execute an action on the RDD.</p>
+</li>
+<li>
+<p>Count the number of lines of the RDD y take a look to the result. If that result is 23, it’s
+correct.</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.png" alt="module2"></p>
+</li>
+<li>
+<p>Execute “collect()” method on the RDD and observe the result. Remember what we said
+during the course about when it’s recommendable to use this method.</p>
+<blockquote>
+<p>Hay que tener precaución con el métedo collect() porque devuelve todos los datos en local en el driver de Spark y podría causar problemas de memoria con RDDs muy grandes</p>
+</blockquote>
+<p><code>val collectedRDD = relato.collect()</code></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.1.png" alt="module2.1"></p>
+</li>
+<li>
+<p>Observe the rest of methods that we can apply on the RDD like we saw in the last
+exercise</p>
+<p>Algunos métodos interesantes aplicables a RDDs son:</p>
+<p><code>filter</code>: permite filtrar los elementos de un RDD mediante una función de filtro especificada</p>
+<p><code>map</code>: permite transformar cada elemento de un RDD mediante una función de transformación especificada</p>
+<p><code>flatMap</code>: permite transformar cada elemento de un RDD en una secuencia de elementos, y luego concatenar todas las secuencias en un único RDD</p>
+<p><code>reduce</code>: permite reducir todos los elementos de un RDD a un único valor mediante una función de reducción especificada</p>
+<p><code>sortBy</code>: permite ordenar los elementos de un RDD mediante una función de clave especificada</p>
+<p><code>distinct</code>: permite eliminar duplicados en un RDD</p>
+<p><code>union</code>: permite combinar dos RDDs en un único RDD</p>
+<p><code>intersection</code>: permite obtener la intersección de dos RDDs (es decir, los elementos que están presentes en ambos RDDs)</p>
+</li>
+<li>
+<p>If you have time, research about how to use “foreach” function to visualize the content
+of the RDD in a more appropriate way to understand it</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.2.png" alt="module2.2"></p>
+</li>
+</ol>
+<h3 id="b-exploration-of-plain-file-2">B. Exploration of plain file 2</h3>
+<p>Tasks to be done</p>
+<ol>
+<li>
+<p>Copy the weblogs folder contained in the Spark’s exercises folder to
+“/home/BIT/data/weblogs/” and checks its content</p>
+</li>
+<li>
+<p>Choose one of the files, open it and study how it’s structured every one of their lines
+(the data that contains, separators (white space), etc…)</p>
+</li>
+<li>
+<p>116.180.70.237 is the IP, 128 is the user number y GET /KBDOC-00031.html HTTP/1.0
+is the article where the action rests.</p>
+</li>
+<li>
+<p>Create a variable that contains the path of the file, for example: file:/home/BIT/data/weblogs/2013-09-15.log</p>
+<p><code>val logPath = &quot;file:///C:/Users/didac.blanco/Desktop/BIT/data/weblogs/2013-09-15.log&quot;</code></p>
+</li>
+<li>
+<p>Create an RDD with the content of the file called ‘logs’</p>
+<p><code>val logs = sc.textFile(logPath)</code></p>
+</li>
+<li>
+<p>Create a new RDD, ‘jpglogs’, containing only the RDD lines that contain the character
+string “.jpg”. You can use the ‘contains()’ method.</p>
+<p><code>jpglogs = logs.filter(x =&gt; x.contains(&quot;.jpg&quot;))</code></p>
+</li>
+<li>
+<p>Print in the screen the 5 first lines of ‘jpglogs’</p>
+<p><code>jpglogs.take(5).foreach(println)</code></p>
+</li>
+<li>
+<p>It is possible to nest several methods in the same line. Create a variable ‘jpglogs2’ that
+returns the number of lines containing the character string “.jpg”.</p>
+<p><code>val jpglogs2 = jpglogs.count</code></p>
+</li>
+<li>
+<p>We will now start using one of the most important functions in Spark: “map()”. To do
+this, take the ‘logs’ RDD and calculate the length of the first 5 lines. You can use the
+functions: “size()” or “length()”. Remember that the “map()” function execute one
+function on each line of the RDD, not on the total set of the RDD.</p>
+<p><code>logs.take(5).map(line =&gt; line.length()).foreach(println)</code></p>
+</li>
+<li>
+<p>Print in the screen every word that contains each of the first 5 lines of the ‘logs’ RDD.
+You can use the function: “split()”.</p>
+<p><code>logs.take(5).map(line =&gt; line.split).foreach(println)</code></p>
+</li>
+<li>
+<p>Map the contents of the logs to an RDD called “logwords” whose contents are arrays of
+words for each line.
+a.</p>
+</li>
+<li>
+<p>Create a new RDD called “ips” from RDD “logs” that only contains the IPs of each line
+a.</p>
+</li>
+<li>
+<p>Print in the screen the first 5 lines of “ips”
+a.
+116.180.70.237 - 128 [15/Sep/2013:23:59:53 +0100] &quot;GET /KBDOC00031.html HTTP/1.0&quot; 200 1388 &quot;<a href="http://www.loudacre.com">http://www.loudacre.com</a>&quot; &quot;Loudacre CSR
+Browser&quot;
+4</p>
+</li>
+<li>
+<p>Take a look to the content of “ips” with “collect()” function. You will find it’s not intuitive
+enough. Try using the “foreach” command.</p>
+</li>
+<li>
+<p>Create a “for” loop to display the contents of the first 10 lines of “ips”. Help: A ‘for’ loop
+has the following structure:
+scala&gt; for (x &lt;- rdd.take()) { print(x) }</p>
+</li>
+<li>
+<p>Save the whole content of “ips” in a text file using the method “saveAsTextFile” (in the
+path: “/home/cloudera/iplist”) and take a look at its contents:</p>
+</li>
+</ol>
+
+        
+        
+    </body>
+    </html>
