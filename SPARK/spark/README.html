@@ -77,7 +77,21 @@
     <body class="vscode-body vscode-light">
         <h1 id="spark-exercises">Spark Exercises</h1>
 <p>Basado en el pdf EXERCISES SPARK BIT - EN</p>
-<h2 id="exercise-using-the-spark-shell-module-1">Exercise: Using the Spark Shell (module 1)</h2>
+<ul>
+<li><a href="#spark-exercises">Spark Exercises</a>
+<ul>
+<li><a href="#module-1-exercise-using-the-spark-shell">Module 1. Exercise: Using the Spark Shell</a></li>
+<li><a href="#module-2-exercise-starting-with-rdds">Module 2. Exercise: Starting with RDDs</a>
+<ul>
+<li><a href="#a-exploration-of-plain-file-1">A. Exploration of plain file 1</a></li>
+<li><a href="#b-exploration-of-plain-file-2">B. Exploration of plain file 2</a></li>
+<li><a href="#c-exploration-of-a-set-of-plain-files-a-folder">C. Exploration of a set of plain files a folder</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="module-1-exercise-using-the-spark-shell">Module 1. Exercise: Using the Spark Shell</h2>
 <p>The purpose of this exercise is to work with the Spark Shell in Scala to read a file in a RDD.
 Tasks to be done:</p>
 <ol>
@@ -109,7 +123,7 @@ SparkContext object followed by a dot.
 <p>To exit the Shell you can type “exit” or you can press CTRL + C.</p>
 </li>
 </ol>
-<h2 id="exercise-starting-with-rdds-module-2">Exercise: Starting with RDDs (module 2)</h2>
+<h2 id="module-2-exercise-starting-with-rdds">Module 2. Exercise: Starting with RDDs</h2>
 <p>The objective of this exercise is to practice with RDD’s trough Spark Shell, for which we will use
 external files.</p>
 <p>A common practice testing phase of data analitics is to analyze small files that are subsets of
@@ -214,7 +228,7 @@ is the article where the action rests.</p>
 <li>
 <p>Create a new RDD, ‘jpglogs’, containing only the RDD lines that contain the character
 string “.jpg”. You can use the ‘contains()’ method.</p>
-<p><code>jpglogs = logs.filter(x =&gt; x.contains(&quot;.jpg&quot;))</code></p>
+<p><code>val jpglogs = logs.filter(x =&gt; x.contains(&quot;.jpg&quot;))</code></p>
 </li>
 <li>
 <p>Print in the screen the 5 first lines of ‘jpglogs’</p>
@@ -235,36 +249,59 @@ function on each line of the RDD, not on the total set of the RDD.</p>
 <li>
 <p>Print in the screen every word that contains each of the first 5 lines of the ‘logs’ RDD.
 You can use the function: “split()”.</p>
-<p><code>logs.take(5).map(line =&gt; line.split).foreach(println)</code></p>
+<p><code>logs.take(5).foreach(line =&gt; line.split(&quot; &quot;).foreach(println))</code></p>
 </li>
 <li>
 <p>Map the contents of the logs to an RDD called “logwords” whose contents are arrays of
-words for each line.
-a.</p>
+words for each line.</p>
+<p><code>val logwords = logs.map(line =&gt; line.split(&quot; &quot;))</code></p>
 </li>
 <li>
-<p>Create a new RDD called “ips” from RDD “logs” that only contains the IPs of each line
-a.</p>
+<p>Create a new RDD called “ips” from RDD “logs” that only contains the IPs of each line</p>
+<p><code>val ips = wordsRDD.map(line =&gt; line.split(&quot; &quot;)(0))</code></p>
 </li>
 <li>
-<p>Print in the screen the first 5 lines of “ips”
-a.
-116.180.70.237 - 128 [15/Sep/2013:23:59:53 +0100] &quot;GET /KBDOC00031.html HTTP/1.0&quot; 200 1388 &quot;<a href="http://www.loudacre.com">http://www.loudacre.com</a>&quot; &quot;Loudacre CSR
-Browser&quot;
-4</p>
+<p>Print in the screen the first 5 lines of “ips”</p>
+<p><code>ips.take(5).foreach(println)</code></p>
 </li>
 <li>
 <p>Take a look to the content of “ips” with “collect()” function. You will find it’s not intuitive
 enough. Try using the “foreach” command.</p>
+<p><code>ips.collect()</code></p>
 </li>
 <li>
 <p>Create a “for” loop to display the contents of the first 10 lines of “ips”. Help: A ‘for’ loop
 has the following structure:
 scala&gt; for (x &lt;- rdd.take()) { print(x) }</p>
+<p><code>for (ip &lt;- ips.take(10)) {println(ip)}</code></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2B1.png" alt="module2b1"></p>
 </li>
 <li>
 <p>Save the whole content of “ips” in a text file using the method “saveAsTextFile” (in the
 path: “/home/cloudera/iplist”) and take a look at its contents:</p>
+<p><code>ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist&quot;)</code></p>
+</li>
+</ol>
+<h3 id="c-exploration-of-a-set-of-plain-files-a-folder">C. Exploration of a set of plain files a folder</h3>
+<p>Tasks to do:</p>
+<ol>
+<li>
+<p>Create an RDD that only contains the IPs of every document of the path:
+“C:\Users\didac.blanco\Desktop\BIT\data\weblogs”. Save its contents in the path: “C:\Users\didac.blanco\Desktop\BIT\iplistw”
+and observe its content</p>
+<pre><code>val logs = sc.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs&quot;)
+val ips = logs.map(_.split(&quot; &quot;)(0))
+ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw&quot;)
+</code></pre>
+<p>o, en una única línea:</p>
+<p><code>sc.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs&quot;).map(_.split(&quot; &quot;)(0)).saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw2&quot;)</code></p>
+</li>
+<li>
+<p>From the “logs” RDD, create an RDD called “htmllogs” containing only: IP and user ID of
+each “html” file. The user ID is the third field of each log line. Then print the first 5 lines.
+An example would be:</p>
+<p><code>val htmllogs = logs.map(x =&gt; x.split(&quot; &quot;)(0)+&quot;/&quot;+x.split(&quot; &quot;)(2))</code></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2C.png" alt="module2C"></p>
 </li>
 </ol>
 

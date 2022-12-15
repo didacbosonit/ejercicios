@@ -1,7 +1,15 @@
 # Spark Exercises
 Basado en el pdf EXERCISES SPARK BIT - EN
 
-## Exercise: Using the Spark Shell (module 1) 
+- [Spark Exercises](#spark-exercises)
+  - [Module 1. Exercise: Using the Spark Shell](#module-1-exercise-using-the-spark-shell)
+  - [Module 2. Exercise: Starting with RDDs](#module-2-exercise-starting-with-rdds)
+    - [A. Exploration of plain file 1](#a-exploration-of-plain-file-1)
+    - [B. Exploration of plain file 2](#b-exploration-of-plain-file-2)
+    - [C. Exploration of a set of plain files a folder](#c-exploration-of-a-set-of-plain-files-a-folder)
+
+
+## Module 1. Exercise: Using the Spark Shell 
 
 The purpose of this exercise is to work with the Spark Shell in Scala to read a file in a RDD.
 Tasks to be done:
@@ -21,7 +29,7 @@ SparkContext object followed by a dot.
     ![module1](module1.png)
 4. To exit the Shell you can type “exit” or you can press CTRL + C.
 
-## Exercise: Starting with RDDs (module 2)
+## Module 2. Exercise: Starting with RDDs
 
 The objective of this exercise is to practice with RDD’s trough Spark Shell, for which we will use 
 external files.
@@ -126,7 +134,7 @@ is the article where the action rests.
 2. Create a new RDD, ‘jpglogs’, containing only the RDD lines that contain the character 
 string “.jpg”. You can use the ‘contains()’ method.
 
-    `jpglogs = logs.filter(x => x.contains(".jpg"))`
+    `val jpglogs = logs.filter(x => x.contains(".jpg"))`
 
 1. Print in the screen the 5 first lines of ‘jpglogs’
    
@@ -147,21 +155,60 @@ function on each line of the RDD, not on the total set of the RDD.
 1.  Print in the screen every word that contains each of the first 5 lines of the ‘logs’ RDD. 
 You can use the function: “split()”.
 
-    `logs.take(5).map(line => line.split).foreach(println)`
+    `logs.take(5).foreach(line => line.split(" ").foreach(println))`
+
 1.  Map the contents of the logs to an RDD called “logwords” whose contents are arrays of 
 words for each line.
-a.
+
+    `val logwords = logs.map(line => line.split(" "))`
+
 1.  Create a new RDD called “ips” from RDD “logs” that only contains the IPs of each line
-a.
-1.  Print in the screen the first 5 lines of “ips”
-a.
-116.180.70.237 - 128 [15/Sep/2013:23:59:53 +0100] "GET /KBDOC00031.html HTTP/1.0" 200 1388 "http://www.loudacre.com" "Loudacre CSR 
-Browser"
-4
-1.  Take a look to the content of “ips” with “collect()” function. You will find it’s not intuitive 
+
+    `val ips = wordsRDD.map(line => line.split(" ")(0))`
+
+2.  Print in the screen the first 5 lines of “ips”
+
+    `ips.take(5).foreach(println)`
+
+3.  Take a look to the content of “ips” with “collect()” function. You will find it’s not intuitive 
 enough. Try using the “foreach” command.
+
+    `ips.collect()`
+
 1.  Create a “for” loop to display the contents of the first 10 lines of “ips”. Help: A ‘for’ loop 
 has the following structure:
 scala> for (x <- rdd.take()) { print(x) }
+
+    `for (ip <- ips.take(10)) {println(ip)}`
+
+    ![module2b1](module2B1.png)
+
 1.  Save the whole content of “ips” in a text file using the method “saveAsTextFile” (in the 
 path: “/home/cloudera/iplist”) and take a look at its contents:
+
+    `ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist")`
+
+### C. Exploration of a set of plain files a folder
+
+Tasks to do:
+1. Create an RDD that only contains the IPs of every document of the path: 
+“C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs”. Save its contents in the path: “C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw” 
+and observe its content
+
+    ```
+    val logs = sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs")
+    val ips = logs.map(_.split(" ")(0))
+    ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw")
+    ```
+
+    o, en una única línea:
+
+    `sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs").map(_.split(" ")(0)).saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw2")`
+
+2. From the “logs” RDD, create an RDD called “htmllogs” containing only: IP and user ID of 
+each “html” file. The user ID is the third field of each log line. Then print the first 5 lines. 
+An example would be:
+
+    `val htmllogs = logs.map(x => x.split(" ")(0)+"/"+x.split(" ")(2))`
+
+    ![module2C](module2C.png)
