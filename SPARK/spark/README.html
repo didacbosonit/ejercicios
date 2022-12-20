@@ -100,17 +100,21 @@ Tasks to be done:</p>
 screen (Infos, warnings, Scala’s version, Spark’s version …). It will take a little while to
 get started.</p>
 <blockquote>
-<p>a. spark-shell</p>
+<p>spark-shell</p>
+</blockquote>
+<blockquote>
+<p>pyspark</p>
 </blockquote>
 </li>
 <li>
-<p>Check if a context “sc” has been successfully created as we can see in the documentation</p>
+<p>Check if a context “sc” has been successfully created as we can see in the documentation. You should see something like this in your screen:
+res0:org.apache.spark.SparkContext= org.apache.spark.SparkContext@”alphanum”</p>
 <blockquote>
-<p>a. Escribir “sc”</p>
+<p>Escribir “sc”</p>
 </blockquote>
 <blockquote>
-<p>b. You should see something like this in your screen:
-res0:org.apache.spark.SparkContext= org.apache.spark.SparkContext@”alphanum”</p>
+<p>En python sale:
+&quot;&lt;SparkContext master=local[*] appName=PySparkShell&gt;&quot;</p>
 </blockquote>
 </li>
 <li>
@@ -164,6 +168,7 @@ command.</p>
 <p>Create a RDD called “relato”, it RDD should contain the content of the file using ‘textFile’
 method</p>
 <p><code>val relato = spark.read.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\relato.txt&quot;)</code></p>
+<p><code>relato = sc.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\relato.txt&quot;)</code></p>
 </li>
 <li>
 <p>Once you have done it, notes that the RDD has not yet been created. This will happen
@@ -200,6 +205,8 @@ exercise</p>
 <p>If you have time, research about how to use “foreach” function to visualize the content
 of the RDD in a more appropriate way to understand it</p>
 <p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.2.png" alt="module2.2"></p>
+<p>En python nos encontramos que <code>.collect()</code> ha creado una lista en vez de otro RDD, lo cual hace que no podamos escribir la misma sentencia en python.</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\python1.png" alt="python1"></p>
 </li>
 </ol>
 <h3 id="b-exploration-of-plain-file-2">B. Exploration of plain file 2</h3>
@@ -220,24 +227,31 @@ is the article where the action rests.</p>
 <li>
 <p>Create a variable that contains the path of the file, for example: file:/home/BIT/data/weblogs/2013-09-15.log</p>
 <p><code>val logPath = &quot;file:///C:/Users/didac.blanco/Desktop/BIT/data/weblogs/2013-09-15.log&quot;</code></p>
+<p>En python <code>log_path = &quot;file:///C:/Users/didac.blanco/Desktop/BIT/data/weblogs/2013-09-15.log&quot;</code></p>
 </li>
 <li>
 <p>Create an RDD with the content of the file called ‘logs’</p>
 <p><code>val logs = sc.textFile(logPath)</code></p>
+<p><code>logs = sc.textFile(log_path)</code></p>
 </li>
 <li>
 <p>Create a new RDD, ‘jpglogs’, containing only the RDD lines that contain the character
 string “.jpg”. You can use the ‘contains()’ method.</p>
 <p><code>val jpglogs = logs.filter(x =&gt; x.contains(&quot;.jpg&quot;))</code></p>
+<p><code>jpglogs = logs.filter(lambda x: &quot;.jpg&quot; in x)</code></p>
 </li>
 <li>
 <p>Print in the screen the 5 first lines of ‘jpglogs’</p>
 <p><code>jpglogs.take(5).foreach(println)</code></p>
+<pre><code class="language-python"><span class="hljs-keyword">for</span> log <span class="hljs-keyword">in</span> jpglogs.take(<span class="hljs-number">5</span>):
+    <span class="hljs-built_in">print</span>(log)
+</code></pre>
 </li>
 <li>
 <p>It is possible to nest several methods in the same line. Create a variable ‘jpglogs2’ that
 returns the number of lines containing the character string “.jpg”.</p>
 <p><code>val jpglogs2 = jpglogs.count</code></p>
+<p><code>jpglogs2 = jpglogs.count()</code></p>
 </li>
 <li>
 <p>We will now start using one of the most important functions in Spark: “map()”. To do
@@ -245,29 +259,40 @@ this, take the ‘logs’ RDD and calculate the length of the first 5 lines. You
 functions: “size()” or “length()”. Remember that the “map()” function execute one
 function on each line of the RDD, not on the total set of the RDD.</p>
 <p><code>logs.take(5).map(line =&gt; line.length()).foreach(println)</code></p>
+<blockquote>
+<p>La diferencia de python en este caso es que logs.take(5) devuelve una lista, en la cual no se puede aplicar el método map() de pySpark, la única opción es aplicar la función map() de la siguiente manera, aplicando posteriormente la función list para que nos devuelva el resultado. Tener en cuenta que esta forma es para utilizar map(), hay otras maneras de conseguir el resultado sin usar map().</p>
+</blockquote>
+<p><code>list(map(lambda x: print(len(x)), logs.take(5)))</code></p>
 </li>
 <li>
 <p>Print in the screen every word that contains each of the first 5 lines of the ‘logs’ RDD.
 You can use the function: “split()”.</p>
 <p><code>logs.take(5).foreach(line =&gt; line.split(&quot; &quot;).foreach(println))</code></p>
+<p><code>[line.split(&quot; &quot;) for line in logs.take(5)]</code></p>
 </li>
 <li>
 <p>Map the contents of the logs to an RDD called “logwords” whose contents are arrays of
 words for each line.</p>
 <p><code>val logwords = logs.map(line =&gt; line.split(&quot; &quot;))</code></p>
+<p><code>logwords = logs.map(lambda x: x.split(&quot; &quot;))</code></p>
 </li>
 <li>
 <p>Create a new RDD called “ips” from RDD “logs” that only contains the IPs of each line</p>
-<p><code>val ips = wordsRDD.map(line =&gt; line.split(&quot; &quot;)(0))</code></p>
+<p><code>val ips = logs.map(line =&gt; line.split(&quot; &quot;)(0))</code></p>
+<p><code>ips = logs.map(lambda line: line.split(&quot; &quot;)[0])</code></p>
 </li>
 <li>
 <p>Print in the screen the first 5 lines of “ips”</p>
 <p><code>ips.take(5).foreach(println)</code></p>
+<p><code>[print(line) for line in ips.take(5)]</code></p>
 </li>
 <li>
 <p>Take a look to the content of “ips” with “collect()” function. You will find it’s not intuitive
 enough. Try using the “foreach” command.</p>
 <p><code>ips.collect()</code></p>
+<pre><code class="language-py"><span class="hljs-keyword">for</span> ip <span class="hljs-keyword">in</span> ips.collect():
+    <span class="hljs-built_in">print</span>(ip)
+</code></pre>
 </li>
 <li>
 <p>Create a “for” loop to display the contents of the first 10 lines of “ips”. Help: A ‘for’ loop
@@ -275,11 +300,15 @@ has the following structure:
 scala&gt; for (x &lt;- rdd.take()) { print(x) }</p>
 <p><code>for (ip &lt;- ips.take(10)) {println(ip)}</code></p>
 <p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2B1.png" alt="module2b1"></p>
+<pre><code class="language-py"><span class="hljs-keyword">for</span> ip <span class="hljs-keyword">in</span> ips.take(<span class="hljs-number">10</span>):
+    <span class="hljs-built_in">print</span>(ip)
+</code></pre>
 </li>
 <li>
 <p>Save the whole content of “ips” in a text file using the method “saveAsTextFile” (in the
 path: “/home/cloudera/iplist”) and take a look at its contents:</p>
-<p><code>ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist&quot;)</code></p>
+<p><code>ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist&quot;)</code>
+<code>ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist_python&quot;)</code></p>
 </li>
 </ol>
 <h3 id="c-exploration-of-a-set-of-plain-files-a-folder">C. Exploration of a set of plain files a folder</h3>
@@ -293,6 +322,10 @@ and observe its content</p>
 val ips = logs.map(_.split(&quot; &quot;)(0))
 ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw&quot;)
 </code></pre>
+<pre><code class="language-py">logs = sc.textFile(<span class="hljs-string">&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs&quot;</span>)
+ips = logs.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: x.split(<span class="hljs-string">&quot; &quot;</span>)[<span class="hljs-number">0</span>])
+ips.saveAsTextFile(<span class="hljs-string">&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw_python&quot;</span>)
+</code></pre>
 <p>o, en una única línea:</p>
 <p><code>sc.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs&quot;).map(_.split(&quot; &quot;)(0)).saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw2&quot;)</code></p>
 </li>
@@ -302,6 +335,10 @@ each “html” file. The user ID is the third field of each log line. Then prin
 An example would be:</p>
 <p><code>val htmllogs = logs.map(x =&gt; x.split(&quot; &quot;)(0)+&quot;/&quot;+x.split(&quot; &quot;)(2))</code></p>
 <p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2C.png" alt="module2C"></p>
+<p><code>htmllogs = logs.map(lambda x: x.split(&quot; &quot;)[0]+&quot;/&quot;+x.split(&quot; &quot;)[2])</code></p>
+<p>una forma más eficiente podría ser:</p>
+<p><code>htmllogs = logs.map(lambda x: '/'.join(x.split(&quot; - &quot;)[:2]))</code></p>
+<p>aprovechando la sintaxis de los archivos log</p>
 </li>
 </ol>
 

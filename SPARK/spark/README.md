@@ -17,17 +17,20 @@ Tasks to be done:
 1. Start the Spark Shell for Scala and get familiar with the information that appears on the 
 screen (Infos, warnings, Scala’s version, Spark’s version …). It will take a little while to 
 get started. 
-    >a. spark-shell
-2. Check if a context “sc” has been successfully created as we can see in the documentation 
-    >a. Escribir “sc”
-
-    >b. You should see something like this in your screen:
+    >spark-shell
+    
+    >pyspark
+2. Check if a context “sc” has been successfully created as we can see in the documentation. You should see something like this in your screen:
 res0:org.apache.spark.SparkContext= org.apache.spark.SparkContext@”alphanum”
-3. Using the auto-complete command on SparkContext you can see a list of available 
+    >Escribir “sc”
+
+    >En python sale: 
+    "\<SparkContext master=local[*] appName=PySparkShell>"
+1. Using the auto-complete command on SparkContext you can see a list of available 
 methods. The Auto-complete function consists of pressing tabulator key after typing the 
 SparkContext object followed by a dot. 
     ![module1](module1.png)
-4. To exit the Shell you can type “exit” or you can press CTRL + C.
+1. To exit the Shell you can type “exit” or you can press CTRL + C.
 
 ## Module 2. Exercise: Starting with RDDs
 
@@ -70,6 +73,8 @@ method
 
     `val relato = spark.read.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\relato.txt")`
 
+    `relato = sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\relato.txt")`
+
 1. Once you have done it, notes that the RDD has not yet been created. This will happen 
 when we will execute an action on the RDD.
 
@@ -77,6 +82,7 @@ when we will execute an action on the RDD.
 correct.
 
     ![module2](module2.png)
+
 
 1. Execute “collect()” method on the RDD and observe the result. Remember what we said 
 during the course about when it’s recommendable to use this method.
@@ -114,6 +120,10 @@ of the RDD in a more appropriate way to understand it
 
         ![module2.2](module2.2.png)
 
+        En python nos encontramos que `.collect()` ha creado una lista en vez de otro RDD, lo cual hace que no podamos escribir la misma sentencia en python. 
+
+        ![python1](python1.png)
+
 ### B. Exploration of plain file 2
 
 Tasks to be done
@@ -127,23 +137,37 @@ is the article where the action rests.
 4. Create a variable that contains the path of the file, for example: file:/home/BIT/data/weblogs/2013-09-15.log
 
     `val logPath = "file:///C:/Users/didac.blanco/Desktop/BIT/data/weblogs/2013-09-15.log"`
+
+    En python `log_path = "file:///C:/Users/didac.blanco/Desktop/BIT/data/weblogs/2013-09-15.log"`
+
 1. Create an RDD with the content of the file called ‘logs’
 
     `val logs = sc.textFile(logPath)`
+
+    `logs = sc.textFile(log_path)`
 
 2. Create a new RDD, ‘jpglogs’, containing only the RDD lines that contain the character 
 string “.jpg”. You can use the ‘contains()’ method.
 
     `val jpglogs = logs.filter(x => x.contains(".jpg"))`
 
+    `jpglogs = logs.filter(lambda x: ".jpg" in x)`
+
 1. Print in the screen the 5 first lines of ‘jpglogs’
    
     `jpglogs.take(5).foreach(println)`
+
+    ```python
+    for log in jpglogs.take(5):
+        print(log)
+    ```
 
 2. It is possible to nest several methods in the same line. Create a variable ‘jpglogs2’ that 
 returns the number of lines containing the character string “.jpg”.
 
     `val jpglogs2 = jpglogs.count`
+    
+    `jpglogs2 = jpglogs.count()`
 
 1. We will now start using one of the most important functions in Spark: “map()”. To do 
 this, take the ‘logs’ RDD and calculate the length of the first 5 lines. You can use the 
@@ -152,28 +176,49 @@ function on each line of the RDD, not on the total set of the RDD.
 
     `logs.take(5).map(line => line.length()).foreach(println)`
 
+    > La diferencia de python en este caso es que logs.take(5) devuelve una lista, en la cual no se puede aplicar el método map() de pySpark, la única opción es aplicar la función map() de la siguiente manera, aplicando posteriormente la función list para que nos devuelva el resultado. Tener en cuenta que esta forma es para utilizar map(), hay otras maneras de conseguir el resultado sin usar map().
+
+    `list(map(lambda x: print(len(x)), logs.take(5)))`
+
+
+
 1.  Print in the screen every word that contains each of the first 5 lines of the ‘logs’ RDD. 
 You can use the function: “split()”.
 
     `logs.take(5).foreach(line => line.split(" ").foreach(println))`
+
+    `[line.split(" ") for line in logs.take(5)]`
 
 1.  Map the contents of the logs to an RDD called “logwords” whose contents are arrays of 
 words for each line.
 
     `val logwords = logs.map(line => line.split(" "))`
 
+    `logwords = logs.map(lambda x: x.split(" "))`
+
 1.  Create a new RDD called “ips” from RDD “logs” that only contains the IPs of each line
 
-    `val ips = wordsRDD.map(line => line.split(" ")(0))`
+    `val ips = logs.map(line => line.split(" ")(0))`
+
+    `ips = logs.map(lambda line: line.split(" ")[0])`
+
 
 2.  Print in the screen the first 5 lines of “ips”
 
     `ips.take(5).foreach(println)`
 
+    `[print(line) for line in ips.take(5)]`
+
 3.  Take a look to the content of “ips” with “collect()” function. You will find it’s not intuitive 
 enough. Try using the “foreach” command.
 
     `ips.collect()`
+
+    ```py
+    for ip in ips.collect():
+        print(ip)
+    ```
+
 
 1.  Create a “for” loop to display the contents of the first 10 lines of “ips”. Help: A ‘for’ loop 
 has the following structure:
@@ -183,10 +228,16 @@ scala> for (x <- rdd.take()) { print(x) }
 
     ![module2b1](module2B1.png)
 
+    ```py
+    for ip in ips.take(10):
+        print(ip)
+    ```
+
 1.  Save the whole content of “ips” in a text file using the method “saveAsTextFile” (in the 
 path: “/home/cloudera/iplist”) and take a look at its contents:
 
     `ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist")`
+    `ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplist_python")`
 
 ### C. Exploration of a set of plain files a folder
 
@@ -201,6 +252,12 @@ and observe its content
     ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw")
     ```
 
+    ```py
+    logs = sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs")
+    ips = logs.map(lambda x: x.split(" ")[0])
+    ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw_python")
+    ```
+
     o, en una única línea:
 
     `sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs").map(_.split(" ")(0)).saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw2")`
@@ -212,3 +269,11 @@ An example would be:
     `val htmllogs = logs.map(x => x.split(" ")(0)+"/"+x.split(" ")(2))`
 
     ![module2C](module2C.png)
+
+    `htmllogs = logs.map(lambda x: x.split(" ")[0]+"/"+x.split(" ")[2])`
+
+    una forma más eficiente podría ser:
+
+    `htmllogs = logs.map(lambda x: '/'.join(x.split(" - ")[:2]))`
+
+    aprovechando la sintaxis de los archivos log
