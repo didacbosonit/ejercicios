@@ -7,6 +7,8 @@ Basado en el pdf EXERCISES SPARK BIT - EN
     - [A. Exploration of plain file 1](#a-exploration-of-plain-file-1)
     - [B. Exploration of plain file 2](#b-exploration-of-plain-file-2)
     - [C. Exploration of a set of plain files a folder](#c-exploration-of-a-set-of-plain-files-a-folder)
+  - [Module 4. Exercise: Working with PairRDDs](#module-4-exercise-working-with-pairrdds)
+    - [A- Work with every data of the logs folder: “C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs”](#a--work-with-every-data-of-the-logs-folder-cusersdidacblancodesktopbitdataweblogs)
 
 
 ## Module 1. Exercise: Using the Spark Shell 
@@ -29,7 +31,7 @@ res0:org.apache.spark.SparkContext= org.apache.spark.SparkContext@”alphanum”
 1. Using the auto-complete command on SparkContext you can see a list of available 
 methods. The Auto-complete function consists of pressing tabulator key after typing the 
 SparkContext object followed by a dot. 
-    ![module1](module1.png)
+    ![module1](imagenes/module1.png)
 1. To exit the Shell you can type “exit” or you can press CTRL + C.
 
 ## Module 2. Exercise: Starting with RDDs
@@ -81,7 +83,7 @@ when we will execute an action on the RDD.
 1. Count the number of lines of the RDD y take a look to the result. If that result is 23, it’s 
 correct.
 
-    ![module2](module2.png)
+    ![module2](imagenes/module2.png)
 
 
 1. Execute “collect()” method on the RDD and observe the result. Remember what we said 
@@ -91,7 +93,7 @@ during the course about when it’s recommendable to use this method.
 
     `val collectedRDD = relato.collect()`
 
-    ![module2.1](module2.1.png)
+    ![module2.1](imagenes/module2.1.png)
 
 1.   Observe the rest of methods that we can apply on the RDD like we saw in the last 
 exercise
@@ -118,11 +120,11 @@ exercise
 1.   If you have time, research about how to use “foreach” function to visualize the content 
 of the RDD in a more appropriate way to understand it
 
-        ![module2.2](module2.2.png)
+        ![module2.2](imagenes/module2.2.png)
 
         En python nos encontramos que `.collect()` ha creado una lista en vez de otro RDD, lo cual hace que no podamos escribir la misma sentencia en python. 
 
-        ![python1](python1.png)
+        ![python1](imagenes/python1.png)
 
 ### B. Exploration of plain file 2
 
@@ -226,7 +228,7 @@ scala> for (x <- rdd.take()) { print(x) }
 
     `for (ip <- ips.take(10)) {println(ip)}`
 
-    ![module2b1](module2B1.png)
+    ![module2b1](imagenes/module2B1.png)
 
     ```py
     for ip in ips.take(10):
@@ -258,7 +260,7 @@ and observe its content
     ips.saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw_python")
     ```
 
-    o, en una única línea:
+    o, en una única línea (en scala):
 
     `sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs").map(_.split(" ")(0)).saveAsTextFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw2")`
 
@@ -268,12 +270,117 @@ An example would be:
 
     `val htmllogs = logs.map(x => x.split(" ")(0)+"/"+x.split(" ")(2))`
 
-    ![module2C](module2C.png)
+    ![module2C](imagenes/module2C.png)
 
     `htmllogs = logs.map(lambda x: x.split(" ")[0]+"/"+x.split(" ")[2])`
 
-    una forma más eficiente podría ser:
 
-    `htmllogs = logs.map(lambda x: '/'.join(x.split(" - ")[:2]))`
+## Module 4. Exercise: Working with PairRDDs
 
-    aprovechando la sintaxis de los archivos log
+The objective of this exercise is to get familiar with the work with pair RDD.
+### A- Work with every data of the logs folder: “C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs” 
+Tasks to do:
+1. Using MapReduce count the number of requests of each user, in other words, count the 
+number of times that each user appears on a line of a log. For that:
+
+    a. Use a Map to create a RDD that contains the pair (ID,1), where the key is the ID 
+field and the Value is the number 1. Remember that ID field is the third element 
+of each line. The data obtained should look like this:
+
+    ```
+    (userida, 1)
+    (userida, 1)
+    (useridb, 1)
+    ```
+
+    b. Use a Reduce to sum the values of each “userid”. The data obtained should look 
+like this:
+
+    ```
+    (userida, 4)
+    (useridb, 8)
+    (useridc, 12)
+    ```
+
+    ```scala
+    val idRDD = logs.map(line => (line.split(" ")(2), 1))
+    val sumRDD = idRDD.reduceByKey((x,y)=>x+y)
+    ```
+
+    ```py
+    idRDD = logs.map(lambda line: (line.split(" ")[2], 1))
+    sumRDD = idRDD.reduceByKey(lambda x, y: x+y)
+    ```
+
+
+2. Show the users id and the number of accesses for the 10 users with the highest access 
+number. For that:
+a. Use a “map()” to swap the Key for the Value, so you will get something like this 
+(If you do not know how to do that, search on the internet):
+
+    (4, userida)
+
+    (8, useridb)
+
+    (12, useridc)
+
+    ```scala
+    val sumRDD2 = sumRDD.map { case (char, num) => (num, char) }
+    ```
+
+    ```py
+    sumRDD2 = sumRDD.map(lambda x: (x[1], x[0]))
+    ```
+
+
+    b. Use the function we saw in theory to order a RDD. Please note that we want to 
+    show the data in descending order (From highest to lowest number of requests). 
+    Remember that the RDD obtained must have the same structure as the original 
+    RDD, in other words, with Key: “userid” and Value: “number of requests”. The 
+    result should be:
+
+    ```scala
+    val rddSorted = sumRDD2.sortBy(-_._1)
+    val resRddSorted = rddSorted.map { case (num, char) => (char, num) }
+    ```
+
+    ```py
+    rddSorted = sumRDD2.sortBy(lambda x: -x[0])
+    resRddSorted = rddSorted.map(lambda x: (x[1], x[0]))
+    ```
+
+1. Create a RDD with Key: “userid” and Value: a list of IP to which the previous “userid” has 
+been connected (In other words, group the IPs for “userID”). Use “groupByKey()” function 
+to do that, so the final result should be something like this: 
+
+    (userid,[20.1.34.55, 74.125.239.98])
+
+    (userid,[75.175.32.10,245.33.1.1,66.79.233.99])
+
+    (userid,[65.50.196.141])
+
+
+    If you have enough time try to show the RDD obtained on the screen, so that its structure 
+    looks like this:
+    
+    ![enunciado4-3](imagenes/enunciado4-3.png)
+ 
+    ```scala
+    val ipIdRDD = logs.map(line => (line.split(" ")(2), line.split(" ")(0)))
+    val groupedRDD = ipIdRDD.groupByKey()
+    groupedRDD.foreach { case (id, ips) =>
+    println(s"ID: $id")
+    println("IPS:")
+    ips.foreach(println)
+    }
+    ```
+
+    ```py
+    ip_id_rdd = logs.map(lambda x: (x.split(" ")[2], x.split(" ")[0]))
+    grouped_rdd = ip_id_rdd.groupByKey()
+    for id, ips in grouped_rdd.collect():
+        print(f"ID: {id}")
+        print("IPS:")
+        for ip in ips:
+            print(ip)
+    ```

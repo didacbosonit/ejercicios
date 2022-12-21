@@ -51,7 +51,8 @@
 }
 
 </style>
-        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
 <style>
@@ -88,6 +89,11 @@
 <li><a href="#c-exploration-of-a-set-of-plain-files-a-folder">C. Exploration of a set of plain files a folder</a></li>
 </ul>
 </li>
+<li><a href="#module-4-exercise-working-with-pairrdds">Module 4. Exercise: Working with PairRDDs</a>
+<ul>
+<li><a href="#a--work-with-every-data-of-the-logs-folder-cusersdidacblancodesktopbitdataweblogs">A- Work with every data of the logs folder: “C:\Users\didac.blanco\Desktop\BIT\data\weblogs”</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -121,7 +127,7 @@ res0:org.apache.spark.SparkContext= org.apache.spark.SparkContext@”alphanum”
 <p>Using the auto-complete command on SparkContext you can see a list of available
 methods. The Auto-complete function consists of pressing tabulator key after typing the
 SparkContext object followed by a dot.
-<img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module1.png" alt="module1"></p>
+<img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\module1.png" alt="module1"></p>
 </li>
 <li>
 <p>To exit the Shell you can type “exit” or you can press CTRL + C.</p>
@@ -177,7 +183,7 @@ when we will execute an action on the RDD.</p>
 <li>
 <p>Count the number of lines of the RDD y take a look to the result. If that result is 23, it’s
 correct.</p>
-<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.png" alt="module2"></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\module2.png" alt="module2"></p>
 </li>
 <li>
 <p>Execute “collect()” method on the RDD and observe the result. Remember what we said
@@ -186,7 +192,7 @@ during the course about when it’s recommendable to use this method.</p>
 <p>Hay que tener precaución con el métedo collect() porque devuelve todos los datos en local en el driver de Spark y podría causar problemas de memoria con RDDs muy grandes</p>
 </blockquote>
 <p><code>val collectedRDD = relato.collect()</code></p>
-<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.1.png" alt="module2.1"></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\module2.1.png" alt="module2.1"></p>
 </li>
 <li>
 <p>Observe the rest of methods that we can apply on the RDD like we saw in the last
@@ -204,9 +210,9 @@ exercise</p>
 <li>
 <p>If you have time, research about how to use “foreach” function to visualize the content
 of the RDD in a more appropriate way to understand it</p>
-<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2.2.png" alt="module2.2"></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\module2.2.png" alt="module2.2"></p>
 <p>En python nos encontramos que <code>.collect()</code> ha creado una lista en vez de otro RDD, lo cual hace que no podamos escribir la misma sentencia en python.</p>
-<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\python1.png" alt="python1"></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\python1.png" alt="python1"></p>
 </li>
 </ol>
 <h3 id="b-exploration-of-plain-file-2">B. Exploration of plain file 2</h3>
@@ -299,7 +305,7 @@ enough. Try using the “foreach” command.</p>
 has the following structure:
 scala&gt; for (x &lt;- rdd.take()) { print(x) }</p>
 <p><code>for (ip &lt;- ips.take(10)) {println(ip)}</code></p>
-<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2B1.png" alt="module2b1"></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\module2B1.png" alt="module2b1"></p>
 <pre><code class="language-py"><span class="hljs-keyword">for</span> ip <span class="hljs-keyword">in</span> ips.take(<span class="hljs-number">10</span>):
     <span class="hljs-built_in">print</span>(ip)
 </code></pre>
@@ -326,7 +332,7 @@ ips.saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw&quot;)
 ips = logs.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: x.split(<span class="hljs-string">&quot; &quot;</span>)[<span class="hljs-number">0</span>])
 ips.saveAsTextFile(<span class="hljs-string">&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw_python&quot;</span>)
 </code></pre>
-<p>o, en una única línea:</p>
+<p>o, en una única línea (en scala):</p>
 <p><code>sc.textFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs&quot;).map(_.split(&quot; &quot;)(0)).saveAsTextFile(&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\iplistw2&quot;)</code></p>
 </li>
 <li>
@@ -334,15 +340,92 @@ ips.saveAsTextFile(<span class="hljs-string">&quot;C:\\Users\\didac.blanco\\Desk
 each “html” file. The user ID is the third field of each log line. Then print the first 5 lines.
 An example would be:</p>
 <p><code>val htmllogs = logs.map(x =&gt; x.split(&quot; &quot;)(0)+&quot;/&quot;+x.split(&quot; &quot;)(2))</code></p>
-<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\module2C.png" alt="module2C"></p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\module2C.png" alt="module2C"></p>
 <p><code>htmllogs = logs.map(lambda x: x.split(&quot; &quot;)[0]+&quot;/&quot;+x.split(&quot; &quot;)[2])</code></p>
-<p>una forma más eficiente podría ser:</p>
-<p><code>htmllogs = logs.map(lambda x: '/'.join(x.split(&quot; - &quot;)[:2]))</code></p>
-<p>aprovechando la sintaxis de los archivos log</p>
+</li>
+</ol>
+<h2 id="module-4-exercise-working-with-pairrdds">Module 4. Exercise: Working with PairRDDs</h2>
+<p>The objective of this exercise is to get familiar with the work with pair RDD.</p>
+<h3 id="a--work-with-every-data-of-the-logs-folder-cusersdidacblancodesktopbitdataweblogs">A- Work with every data of the logs folder: “C:\Users\didac.blanco\Desktop\BIT\data\weblogs”</h3>
+<p>Tasks to do:</p>
+<ol>
+<li>
+<p>Using MapReduce count the number of requests of each user, in other words, count the
+number of times that each user appears on a line of a log. For that:</p>
+<p>a. Use a Map to create a RDD that contains the pair (ID,1), where the key is the ID
+field and the Value is the number 1. Remember that ID field is the third element
+of each line. The data obtained should look like this:</p>
+<pre><code>(userida, 1)
+(userida, 1)
+(useridb, 1)
+</code></pre>
+<p>b. Use a Reduce to sum the values of each “userid”. The data obtained should look
+like this:</p>
+<pre><code>(userida, 4)
+(useridb, 8)
+(useridc, 12)
+</code></pre>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> idRDD = logs.map(line =&gt; (line.split(<span class="hljs-string">&quot; &quot;</span>)(<span class="hljs-number">2</span>), <span class="hljs-number">1</span>))
+<span class="hljs-keyword">val</span> sumRDD = idRDD.reduceByKey((x,y)=&gt;x+y)
+</code></pre>
+<pre><code class="language-py">idRDD = logs.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> line: (line.split(<span class="hljs-string">&quot; &quot;</span>)[<span class="hljs-number">2</span>], <span class="hljs-number">1</span>))
+sumRDD = idRDD.reduceByKey(<span class="hljs-keyword">lambda</span> x, y: x+y)
+</code></pre>
+</li>
+<li>
+<p>Show the users id and the number of accesses for the 10 users with the highest access
+number. For that:
+a. Use a “map()” to swap the Key for the Value, so you will get something like this
+(If you do not know how to do that, search on the internet):</p>
+<p>(4, userida)</p>
+<p>(8, useridb)</p>
+<p>(12, useridc)</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> sumRDD2 = sumRDD.map { <span class="hljs-keyword">case</span> (char, num) =&gt; (num, char) }
+</code></pre>
+<pre><code class="language-py">sumRDD2 = sumRDD.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: (x[<span class="hljs-number">1</span>], x[<span class="hljs-number">0</span>]))
+</code></pre>
+<p>b. Use the function we saw in theory to order a RDD. Please note that we want to
+show the data in descending order (From highest to lowest number of requests).
+Remember that the RDD obtained must have the same structure as the original
+RDD, in other words, with Key: “userid” and Value: “number of requests”. The
+result should be:</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> rddSorted = sumRDD2.sortBy(-_._1)
+<span class="hljs-keyword">val</span> resRddSorted = rddSorted.map { <span class="hljs-keyword">case</span> (num, char) =&gt; (char, num) }
+</code></pre>
+<pre><code class="language-py">rddSorted = sumRDD2.sortBy(<span class="hljs-keyword">lambda</span> x: -x[<span class="hljs-number">0</span>])
+resRddSorted = rddSorted.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: (x[<span class="hljs-number">1</span>], x[<span class="hljs-number">0</span>]))
+</code></pre>
+</li>
+<li>
+<p>Create a RDD with Key: “userid” and Value: a list of IP to which the previous “userid” has
+been connected (In other words, group the IPs for “userID”). Use “groupByKey()” function
+to do that, so the final result should be something like this:</p>
+<p>(userid,[20.1.34.55, 74.125.239.98])</p>
+<p>(userid,[75.175.32.10,245.33.1.1,66.79.233.99])</p>
+<p>(userid,[65.50.196.141])</p>
+<p>If you have enough time try to show the RDD obtained on the screen, so that its structure
+looks like this:</p>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\enunciado4-3.png" alt="enunciado4-3"></p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> ipIdRDD = logs.map(line =&gt; (line.split(<span class="hljs-string">&quot; &quot;</span>)(<span class="hljs-number">2</span>), line.split(<span class="hljs-string">&quot; &quot;</span>)(<span class="hljs-number">0</span>)))
+<span class="hljs-keyword">val</span> groupedRDD = ipIdRDD.groupByKey()
+groupedRDD.foreach { <span class="hljs-keyword">case</span> (id, ips) =&gt;
+println(<span class="hljs-string">s&quot;ID: <span class="hljs-subst">$id</span>&quot;</span>)
+println(<span class="hljs-string">&quot;IPS:&quot;</span>)
+ips.foreach(println)
+}
+</code></pre>
+<pre><code class="language-py">ip_id_rdd = logs.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: (x.split(<span class="hljs-string">&quot; &quot;</span>)[<span class="hljs-number">2</span>], x.split(<span class="hljs-string">&quot; &quot;</span>)[<span class="hljs-number">0</span>]))
+grouped_rdd = ip_id_rdd.groupByKey()
+<span class="hljs-keyword">for</span> <span class="hljs-built_in">id</span>, ips <span class="hljs-keyword">in</span> grouped_rdd.collect():
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;ID: <span class="hljs-subst">{<span class="hljs-built_in">id</span>}</span>&quot;</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;IPS:&quot;</span>)
+    <span class="hljs-keyword">for</span> ip <span class="hljs-keyword">in</span> ips:
+        <span class="hljs-built_in">print</span>(ip)
+</code></pre>
 </li>
 </ol>
 
-        
+        <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         
     </body>
     </html>
