@@ -440,31 +440,55 @@ so that you will get a set of data with “userid” as Key and all the informat
 (including “userid” field) followed by the number of visits of each user as Value. The
 steps to execute are:</p>
 <p>a. Do a “map()” of the data of “accounts.csv” so that the Key will be “userid” and
-the Value will be the complete line (including “userid” field). We will get
-something like this:</p>
+the Value will be the complete line (including “userid” field).</p>
+<blockquote>
+<p>Como se trata de un archivo csv, se puede abrir directamente creando un data frame con <code>df = spark.read.csv('ruta/al/archivo.csv', header=True, inferSchema=True)</code> (en python) pero en este caso vamos a abrirlo como los archivos anteriores para crear un RDD</p>
+</blockquote>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> csvRDD = sc.textFile(<span class="hljs-string">&quot;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\accounts.csv&quot;</span>)
+<span class="hljs-keyword">val</span> accounts = csvRDD.map(x =&gt; (x.split(&#x27;,&#x27;)(<span class="hljs-number">0</span>), x.split(&#x27;,&#x27;)))
+</code></pre>
+<pre><code class="language-py">csvRDD = sc.textFile(<span class="hljs-string">&#x27;C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\accounts.csv&#x27;</span>)
+accounts = csvRDD.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: (x.split(<span class="hljs-string">&#x27;,&#x27;</span>)[<span class="hljs-number">0</span>], x.split(<span class="hljs-string">&#x27;,&#x27;</span>)))
+</code></pre>
 <p>b. Do a JOIN between the RDD recently created and the RDD that you created in
 the previous step, whose content is (userid, number of visits), so that you will get
 something like this:</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> rddjoin = accounts.join(sumRDD)
+</code></pre>
+<pre><code class="language-py">rddjoin = accounts.join(sumRDD)
+</code></pre>
 <p>c. Create a RDD from the previous RDD whose content will be userid, number of
 visits, name and surname of the first 5 lines, to get a structure like the next one
 (the image shows more lines than needed):</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> rddfilter = rddjoin.map{ <span class="hljs-keyword">case</span> (key, (list, count))=&gt;
+    (key, <span class="hljs-type">List</span>(list(<span class="hljs-number">0</span>),count,list(<span class="hljs-number">3</span>),list(<span class="hljs-number">4</span>)))
+}
+</code></pre>
+<pre><code class="language-py">rddfilter = rddjoin.<span class="hljs-built_in">map</span>(<span class="hljs-keyword">lambda</span> x: (x[<span class="hljs-number">0</span>], [x[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>][<span class="hljs-number">0</span>], x[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>], x[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>][<span class="hljs-number">3</span>], x[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>][<span class="hljs-number">4</span>]]))
+</code></pre>
 </li>
 </ol>
 <h3 id="c--work-with-more-methods-on-pairs-rdd">C- Work with more methods on pairs RDD</h3>
 <p>Tasks to do:</p>
 <ol>
-<li>Use “KeyBy” to create a RDD with accounts data but with the postal(ZIP) code as Key
+<li>
+<p>Use “KeyBy” to create a RDD with accounts data but with the postal(ZIP) code as Key
 (ninth field of the accounts.csv file). You can research this method in the Spark’s Online
-API.
-a.</li>
-<li>Create a pair RDD with the postal (ZIP) code as the Key and a list of names (surname,
+API.</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> zip = csvRDD.map(x=&gt;x.split(&#x27;,&#x27;)).<span class="hljs-type">KeyBy</span>(x =&gt; x(<span class="hljs-number">8</span>))
+</code></pre>
+</li>
+<li>
+<p>Create a pair RDD with the postal (ZIP) code as the Key and a list of names (surname,
 name) of that postal code as the Value. Those fields are 5ª and 4ª respectively in
 “accounts.csv”.
 a. If you have time, study “mapValues()” function and try to use it to fulfill the
-purpose of this exercise
-i.
-9</li>
-<li>Sort the data by postal code and then, for the first 5 postal codes, display the postal
+purpose of this exercise</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> zipnames = zip.mapValues(values=&gt;values(<span class="hljs-number">4</span>)+&#x27;, &#x27;+values(<span class="hljs-number">3</span>))
+</code></pre>
+</li>
+<li>
+<p>Sort the data by postal code and then, for the first 5 postal codes, display the postal
 code and a list of names whose accounts are in this postal (ZIP) code. The output should
 be similar to:
 --- 85003
@@ -476,8 +500,16 @@ Lindsay,Ivy
 Morris,Eric
 Reiser,Hazel
 Gregg,Alicia
-Preston,Elizabeth</li>
+Preston,Elizabeth</p>
+<pre><code class="language-scala"></code></pre>
+</li>
 </ol>
+<p>zipnames.sortByKey().take(10).foreach{
+case (x,y)=&gt;
+println(&quot;---&quot;+x)
+y.foreach(println)
+}
+```</p>
 
         <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         

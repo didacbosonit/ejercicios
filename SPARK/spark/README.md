@@ -398,30 +398,64 @@ so that you will get a set of data with “userid” as Key and all the informat
 steps to execute are:
 
     a. Do a “map()” of the data of “accounts.csv” so that the Key will be “userid” and 
-the Value will be the complete line (including “userid” field). We will get 
-something like this:
+the Value will be the complete line (including “userid” field).
+
+    >Como se trata de un archivo csv, se puede abrir directamente creando un data frame con `df = spark.read.csv('ruta/al/archivo.csv', header=True, inferSchema=True)` (en python) pero en este caso vamos a abrirlo como los archivos anteriores para crear un RDD
+
+    ```scala
+    val csvRDD = sc.textFile("C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\accounts.csv")
+    val accounts = csvRDD.map(x => (x.split(',')(0), x.split(',')))
+    ```
+
+    ```py
+    csvRDD = sc.textFile('C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\accounts.csv')
+    accounts = csvRDD.map(lambda x: (x.split(',')[0], x.split(',')))
+    ```
 
     b. Do a JOIN between the RDD recently created and the RDD that you created in 
 the previous step, whose content is (userid, number of visits), so that you will get 
 something like this:
 
+    ```scala
+    val rddjoin = accounts.join(sumRDD)
+    ```
+
+    ```py
+    rddjoin = accounts.join(sumRDD)
+    ```
+
     c. Create a RDD from the previous RDD whose content will be userid, number of 
 visits, name and surname of the first 5 lines, to get a structure like the next one 
 (the image shows more lines than needed):
+
+    ```scala
+    val rddfilter = rddjoin.map{ case (key, (list, count))=>
+        (key, List(list(0),count,list(3),list(4)))
+    }
+    ```
+
+    ```py
+    rddfilter = rddjoin.map(lambda x: (x[0], [x[1][0][0], x[1][1], x[1][0][3], x[1][0][4]]))
+    ```
 
 ### C- Work with more methods on pairs RDD 
 Tasks to do:
 1. Use “KeyBy” to create a RDD with accounts data but with the postal(ZIP) code as Key 
 (ninth field of the accounts.csv file). You can research this method in the Spark’s Online 
 API.
-a.
+    ```scala
+    val zip = csvRDD.map(x=>x.split(',')).KeyBy(x => x(8))
+    ```
 1. Create a pair RDD with the postal (ZIP) code as the Key and a list of names (surname, 
 name) of that postal code as the Value. Those fields are 5ª and 4ª respectively in 
 “accounts.csv”. 
 a. If you have time, study “mapValues()” function and try to use it to fulfill the 
 purpose of this exercise
-i.
-9
+
+    ```scala
+    val zipnames = zip.mapValues(values=>values(4)+', '+values(3))
+    ```
+
 1. Sort the data by postal code and then, for the first 5 postal codes, display the postal 
 code and a list of names whose accounts are in this postal (ZIP) code. The output should 
 be similar to:
@@ -435,3 +469,11 @@ Morris,Eric
 Reiser,Hazel
 Gregg,Alicia
 Preston,Elizabeth
+
+    ```scala
+zipnames.sortByKey().take(10).foreach{
+    case (x,y)=>
+    println("---"+x)
+    y.foreach(println)
+}
+    ```
