@@ -9,6 +9,8 @@ Basado en el pdf EXERCISES SPARK BIT - EN
     - [C. Exploration of a set of plain files a folder](#c-exploration-of-a-set-of-plain-files-a-folder)
   - [Module 4. Exercise: Working with PairRDDs](#module-4-exercise-working-with-pairrdds)
     - [A- Work with every data of the logs folder: “C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs”](#a--work-with-every-data-of-the-logs-folder-cusersdidacblancodesktopbitdataweblogs)
+    - [B- Work with every data of the “logs” folder: “/home/BIT/data/accounts.cvs”](#b--work-with-every-data-of-the-logs-folder-homebitdataaccountscvs)
+    - [C- Work with more methods on pairs RDD](#c--work-with-more-methods-on-pairs-rdd)
 
 
 ## Module 1. Exercise: Using the Spark Shell 
@@ -384,3 +386,52 @@ to do that, so the final result should be something like this:
         for ip in ips:
             print(ip)
     ```
+### B- Work with every data of the “logs” folder: “/home/BIT/data/accounts.cvs” 
+Tasks to do:
+1. Open “accounts.csv” with a text editor and study its content. You will see that the first 
+field is the user id, which corresponds to the user id of the web server log files. The rest 
+of the fields are: date, name, surname, direction…
+
+2. Do a JOIN between the logs data of the previous exercise and the data of “accounts.csv”, 
+so that you will get a set of data with “userid” as Key and all the information of the user 
+(including “userid” field) followed by the number of visits of each user as Value. The 
+steps to execute are:
+
+    a. Do a “map()” of the data of “accounts.csv” so that the Key will be “userid” and 
+the Value will be the complete line (including “userid” field). We will get 
+something like this:
+
+    b. Do a JOIN between the RDD recently created and the RDD that you created in 
+the previous step, whose content is (userid, number of visits), so that you will get 
+something like this:
+
+    c. Create a RDD from the previous RDD whose content will be userid, number of 
+visits, name and surname of the first 5 lines, to get a structure like the next one 
+(the image shows more lines than needed):
+
+### C- Work with more methods on pairs RDD 
+Tasks to do:
+1. Use “KeyBy” to create a RDD with accounts data but with the postal(ZIP) code as Key 
+(ninth field of the accounts.csv file). You can research this method in the Spark’s Online 
+API.
+a.
+1. Create a pair RDD with the postal (ZIP) code as the Key and a list of names (surname, 
+name) of that postal code as the Value. Those fields are 5ª and 4ª respectively in 
+“accounts.csv”. 
+a. If you have time, study “mapValues()” function and try to use it to fulfill the 
+purpose of this exercise
+i.
+9
+1. Sort the data by postal code and then, for the first 5 postal codes, display the postal 
+code and a list of names whose accounts are in this postal (ZIP) code. The output should 
+be similar to:
+--- 85003
+Jenkins,Thad
+Rick,Edward
+Lindsay,Ivy
+...
+--- 85004
+Morris,Eric
+Reiser,Hazel
+Gregg,Alicia
+Preston,Elizabeth
