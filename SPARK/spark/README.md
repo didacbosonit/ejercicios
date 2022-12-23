@@ -11,6 +11,7 @@ Basado en el pdf EXERCISES SPARK BIT - EN
     - [A- Work with every data of the logs folder: “C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\weblogs”](#a--work-with-every-data-of-the-logs-folder-cusersdidacblancodesktopbitdataweblogs)
     - [B- Work with every data of the “logs” folder: “/home/BIT/data/accounts.cvs”](#b--work-with-every-data-of-the-logs-folder-homebitdataaccountscvs)
     - [C- Work with more methods on pairs RDD](#c--work-with-more-methods-on-pairs-rdd)
+  - [Module 5.1. Exercise: SparkSQL (JSON)](#module-51-exercise-sparksql-json)
 
 
 ## Module 1. Exercise: Using the Spark Shell 
@@ -457,23 +458,100 @@ purpose of this exercise
     ```
 
 1. Sort the data by postal code and then, for the first 5 postal codes, display the postal 
-code and a list of names whose accounts are in this postal (ZIP) code. The output should 
-be similar to:
---- 85003
-Jenkins,Thad
-Rick,Edward
-Lindsay,Ivy
-...
---- 85004
-Morris,Eric
-Reiser,Hazel
-Gregg,Alicia
-Preston,Elizabeth
-
-    ```scala
-zipnames.sortByKey().take(10).foreach{
-    case (x,y)=>
-    println("---"+x)
-    y.foreach(println)
-}
+code and a list of names whose accounts are in this postal (ZIP) code. The output should be similar to:
     ```
+    --- 85003
+    Jenkins,Thad
+    Rick,Edward
+    Lindsay,Ivy
+    ...
+    --- 85004
+    Morris,Eric
+    Reiser,Hazel
+    Gregg,Alicia
+    Preston,Elizabeth
+    ```
+    ```scala
+    zipnames.sortByKey().take(10).foreach{
+        case (x,y)=>
+        println("---"+x)
+        y.foreach(println)
+    }
+    ```
+
+## Module 5.1. Exercise: SparkSQL (JSON)
+The purpose of this exercise is to get familiar with the use of the SQL module of Spark.
+Tasks to do:
+1. Create a new SQLContext
+
+    `val sqlContext = spark.sqlContext`
+
+    ```py
+    from pyspark.sql import SQLContext
+    sqlContext = SQLContext(sc)
+    ```
+
+2. Import the implicits that allow us to convert a RDD in a DataFrame
+
+    `import spark.implicits._`
+
+3. Charge the dataset “zips.json”, which is found in the Spark’s exercises folder, in 
+“/home/BIT/data/zips.json”. This dataset contains United States postal (ZIP) codes. You 
+can use the command “ssc.load(“file path”, “format”)”. The dataset “zips.json” looks like 
+this: ![5.1.1](imagenes/5.1.1.png)
+
+    `val df = spark.read.format("json").load("C:/Users/didac.blanco/Desktop/BIT/data/zips.json")`
+    o también:
+    ```scala
+    val rdd = sc.textFile("C:/Users/didac.blanco/Desktop/BIT/zips.json")
+    val df = rdd.toDF()
+    ```
+
+1. View the data with “show()” command. You have to see a 5-column table with a subset 
+of the file data. You can see that the postal code is “_id”, the city es “city”, the location 
+“loc”, the population “pop and the state “state”.
+
+    `df.show()`
+
+1. Get the postal (ZIP) codes whose population is greater than 10.000 using the API of 
+DataFrames.
+
+    `val dfZIP = df.filter($"pop" > 10000).select("_id")`
+
+1. Store this table in a temporal file to execute SQL against it.
+
+    ```
+    df.write.format("parquet").save("/tmp/zipcodes")
+    val dfSQL = sqlContext.read.format("parquet").load("/tmp/zipcodes")
+    df.createTempView("SQL")
+    ```
+
+2. Make the same query as in point 5, but this time using SQL
+
+    ```
+    val results = sqlContext.sql("SELECT * FROM SQL WHERE pop > 10000")
+    ```
+
+3. Using SQL, get the city with more than 100 postal (ZIP) codes.
+   
+   ```
+   sqlContext.sql("SELECT city, count(*) AS count FROM SQL GROUP BY city HAVING count(*) > 100").show()
+   ```
+   //Houston, 101
+
+4. Using SQL, get the population of the Wisconsin (WI) state.
+
+    ```
+    sqlContext.sql("SELECT state, sum(pop) FROM SQL WHERE state = 'WI' GROUP BY state").show()
+    ```
+
+    // ([WI,4891769])
+
+5.  Using SQL, get the 5 most populated states
+
+    ```
+    sqlContext.sql("SELECT state, sum(pop) FROM SQL GROUP BY state ORDER BY sum(pop) DESC LIMIT 5").show()
+    ```
+
+    ![5.1.10](imagenes/5.1.10.png)
+

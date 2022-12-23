@@ -96,6 +96,7 @@
 <li><a href="#c--work-with-more-methods-on-pairs-rdd">C- Work with more methods on pairs RDD</a></li>
 </ul>
 </li>
+<li><a href="#module-51-exercise-sparksql-json">Module 5.1. Exercise: SparkSQL (JSON)</a></li>
 </ul>
 </li>
 </ul>
@@ -489,9 +490,8 @@ purpose of this exercise</p>
 </li>
 <li>
 <p>Sort the data by postal code and then, for the first 5 postal codes, display the postal
-code and a list of names whose accounts are in this postal (ZIP) code. The output should
-be similar to:
---- 85003
+code and a list of names whose accounts are in this postal (ZIP) code. The output should be similar to:</p>
+<pre><code>--- 85003
 Jenkins,Thad
 Rick,Edward
 Lindsay,Ivy
@@ -500,16 +500,84 @@ Lindsay,Ivy
 Morris,Eric
 Reiser,Hazel
 Gregg,Alicia
-Preston,Elizabeth</p>
-<pre><code class="language-scala"></code></pre>
+Preston,Elizabeth
+</code></pre>
+<pre><code class="language-scala">zipnames.sortByKey().take(<span class="hljs-number">10</span>).foreach{
+    <span class="hljs-keyword">case</span> (x,y)=&gt;
+    println(<span class="hljs-string">&quot;---&quot;</span>+x)
+    y.foreach(println)
+}
+</code></pre>
 </li>
 </ol>
-<p>zipnames.sortByKey().take(10).foreach{
-case (x,y)=&gt;
-println(&quot;---&quot;+x)
-y.foreach(println)
-}
-```</p>
+<h2 id="module-51-exercise-sparksql-json">Module 5.1. Exercise: SparkSQL (JSON)</h2>
+<p>The purpose of this exercise is to get familiar with the use of the SQL module of Spark.
+Tasks to do:</p>
+<ol>
+<li>
+<p>Create a new SQLContext</p>
+<p><code>val sqlContext = spark.sqlContext</code></p>
+<pre><code class="language-py"><span class="hljs-keyword">from</span> pyspark.sql <span class="hljs-keyword">import</span> SQLContext
+sqlContext = SQLContext(sc)
+</code></pre>
+</li>
+<li>
+<p>Import the implicits that allow us to convert a RDD in a DataFrame</p>
+<p><code>import spark.implicits._</code></p>
+</li>
+<li>
+<p>Charge the dataset “zips.json”, which is found in the Spark’s exercises folder, in
+“/home/BIT/data/zips.json”. This dataset contains United States postal (ZIP) codes. You
+can use the command “ssc.load(“file path”, “format”)”. The dataset “zips.json” looks like
+this: <img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\5.1.1.png" alt="5.1.1"></p>
+<p><code>val df = spark.read.format(&quot;json&quot;).load(&quot;C:/Users/didac.blanco/Desktop/BIT/data/zips.json&quot;)</code>
+o también:</p>
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> rdd = sc.textFile(<span class="hljs-string">&quot;C:/Users/didac.blanco/Desktop/BIT/zips.json&quot;</span>)
+<span class="hljs-keyword">val</span> df = rdd.toDF()
+</code></pre>
+</li>
+<li>
+<p>View the data with “show()” command. You have to see a 5-column table with a subset
+of the file data. You can see that the postal code is “_id”, the city es “city”, the location
+“loc”, the population “pop and the state “state”.</p>
+<p><code>df.show()</code></p>
+</li>
+<li>
+<p>Get the postal (ZIP) codes whose population is greater than 10.000 using the API of
+DataFrames.</p>
+<p><code>val dfZIP = df.filter($&quot;pop&quot; &gt; 10000).select(&quot;_id&quot;)</code></p>
+</li>
+<li>
+<p>Store this table in a temporal file to execute SQL against it.</p>
+<pre><code>df.write.format(&quot;parquet&quot;).save(&quot;/tmp/zipcodes&quot;)
+val dfSQL = sqlContext.read.format(&quot;parquet&quot;).load(&quot;/tmp/zipcodes&quot;)
+df.createTempView(&quot;SQL&quot;)
+</code></pre>
+</li>
+<li>
+<p>Make the same query as in point 5, but this time using SQL</p>
+<pre><code>val results = sqlContext.sql(&quot;SELECT * FROM SQL WHERE pop &gt; 10000&quot;)
+</code></pre>
+</li>
+<li>
+<p>Using SQL, get the city with more than 100 postal (ZIP) codes.</p>
+<pre><code>sqlContext.sql(&quot;SELECT city, count(*) AS count FROM SQL GROUP BY city HAVING count(*) &gt; 100&quot;).show()
+</code></pre>
+<p>//Houston, 101</p>
+</li>
+<li>
+<p>Using SQL, get the population of the Wisconsin (WI) state.</p>
+<pre><code>sqlContext.sql(&quot;SELECT state, sum(pop) FROM SQL WHERE state = 'WI' GROUP BY state&quot;).show()
+</code></pre>
+<p>// ([WI,4891769])</p>
+</li>
+<li>
+<p>Using SQL, get the 5 most populated states</p>
+<pre><code>sqlContext.sql(&quot;SELECT state, sum(pop) FROM SQL GROUP BY state ORDER BY sum(pop) DESC LIMIT 5&quot;).show()
+</code></pre>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\SPARK\spark\imagenes\5.1.10.png" alt="5.1.10"></p>
+</li>
+</ol>
 
         <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         
