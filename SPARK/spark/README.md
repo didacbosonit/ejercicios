@@ -12,6 +12,9 @@ Basado en el pdf EXERCISES SPARK BIT - EN
     - [B- Work with every data of the “logs” folder: “/home/BIT/data/accounts.cvs”](#b--work-with-every-data-of-the-logs-folder-homebitdataaccountscvs)
     - [C- Work with more methods on pairs RDD](#c--work-with-more-methods-on-pairs-rdd)
   - [Module 5.1. Exercise: SparkSQL (JSON)](#module-51-exercise-sparksql-json)
+  - [Module 5.3. Exercise: SparkSQL (DataFrames)](#module-53-exercise-sparksql-dataframes)
+  - [Modulo 5.4. Ejercicios opcionales: Trabajando con SparkSQL](#modulo-54-ejercicios-opcionales-trabajando-con-sparksql)
+  - [Module 6.1. Exercise: Spark Streaming I](#module-61-exercise-spark-streaming-i)
 
 
 ## Module 1. Exercise: Using the Spark Shell 
@@ -554,4 +557,225 @@ DataFrames.
     ```
 
     ![5.1.10](imagenes/5.1.10.png)
+
+## Module 5.3. Exercise: SparkSQL (DataFrames) 
+ 
+The purpose of this exercise is to get a bit more familiar with the DataFrames API.
+1. We create a SQL context
+    
+    `val sqlContext = spark.sqlContext`
+
+2. Import the implicits that allow us to convert RDDs to DataFrames and Rows
+    ```
+    import sqlContext.implicits._
+    import org.apache.spark.sql.Row
+    import org.apache.spark.sql.types.{StructType,StructField,StringType}
+    ```
+3. We create a variable with the file path “C:\Users\didac.blanco\Desktop\BIT\dataDataSetPartidos.txt”. The lines 
+have the following format:
+    ```
+    idPartido::temporada::jornada::EquipoLocal::EquipoVisitant
+    e::golesLocal::golesVisitante::fecha::timestamp
+    ```
+
+    ```
+    val filePath: String = "C:\\Users\\didac.blanco\\Desktop\\BIT\\data\\DataSetPartidos.txt"
+    ```
+1. We store the content of the file in a variable.
+
+    `var data=sc.textFile(filePath)`
+
+2. We create a variable that contains the schema of the data
+
+    ```
+    val schemaString = "idPartido::temporada::jornada::EquipoLocal::EquipoVisitante::golesLocal::golesVisitante::fecha::timestamp"
+    ```
+
+3. We generate a schema based in the variable that contains the data schema that we 
+have recently created
+
+    ```
+    val schema = StructType(schemaString.split("::").map(fieldName => StructField(fieldName, StringType, true)))
+    ```
+
+1. We convert the files of our RDD to Rows
+
+    ```
+    val rows = data.map(_.split("::")).map(p=>Row(p(0),p(1),p(2),p(3).toString,p(4).toString,p(5).toString,p(6).toString,p(7),p(8).trim))
+    ```
+
+2. We apply the Schema to the RDD
+
+    ```
+    val dfPartidos = sqlContext.createDataFrame(rows, schema)
+    ```
+
+3. We register the DataFrame as a table
+
+    ```
+    dfPartidos.createOrReplaceTempView("partidos")
+    ```
+
+    > We are now ready to make queries about the DataFrame in the following format. The results of the queries are DataFrames and support operations such as normal 
+    RDDs. The columns of the results Row are accessible from an index or a field name
+
+1.  Exercise: What is Oviedo’s goal record in a season as visitor?
+
+    ```
+    val recordOviedoVisitor = sqlContext.sql("SELECT sum(golesVisitante) AS goles, temporada FROM partidos WHERE equipoVisitante='Real Oviedo' GROUP BY temporada ORDER BY goles DESC")
+    recordOviedoVisitor.take(1).println
+    ```
+
+1.  Who has been more seasons in 1 division: Sporting or Oviedo?
+
+    ```
+    val temporadasOviedo = sqlContext.sql("SELECT count(distinct(temporada)) FROM partidos WHERE equipoLocal='Real Oviedo' or equipoVisitante='Real Oviedo'")
+    val temporadasSporting = sqlContext.sql("SELECT count(distinct(temporada)) FROM partidos WHERE equipoLocal='Sporting de Gijon' or equipoVisitante='Sporting de Gijon'")
+    temporadasOviedo.show()
+    temporadasSporting.show()
+    ```
+
+## Modulo 5.4. Ejercicios opcionales: Trabajando con SparkSQL
+
+The aim of this exercise is to consolidate the knowledge acquired with SparkSQL in a real 
+environment. For this we have a dataset with all the episodes of the Simpsons, their seasons 
+and their IMDB qualification (among other parameters).
+Ex1: Tasks to do
+1. Take the dataset' simpsons_episodes. csv' provided by the teacher. Copy it to the virtual 
+machine by dragging and dropping the file.
+1. Using the terminal, transfer this dataset to the HDFS (The default path of the HDFS is: 
+hdfs: //quickstart. cloudera: 8020/user/cloudera, copy the dataset to this path.)
+1. The dataset we have is structured, that is, its columns have headers (as in a database). 
+Take a moment to familiarize yourself with the dataset and its respective fields. 
+1. The objective of this exercise is to obtain a graphical plot in which we can appreciate, 
+graphically, the average score of the Simpsons' chapters during all their seasons. This 
+exercise is a possible real case in which we can obtain information and extract 
+conclusions by analyzing a multitude of data.
+1. To load ‘csv’ files into Spark we need to use this library, while to create the graphical 
+plot from the data we obtain we need this one. To execute Spark from the terminal and 
+indicate the libraries we want to use, we must execute the command (IMPORTANT TO 
+EXECUTE WITHOUT SPACES):
+
+    `spark-shell --packages com.databricks:spark-csv_2.10:1.5.0,org.sameersingh.scalaplot:scalaplot:0.0.4`
+    - Note that when executing the above command, Spark will automatically load the 
+libraries, as it will download them from the Maven Central repository, where both 
+are hosted.
+1. While loading the Spark console, you'll notice that it takes more time and that you see 
+more information on the screen. This is due to the fact that Spark is downloading and 
+adding the libraries indicated in the previous step. Once Spark has loaded, copy these 
+IMPORTS to the console:
+    ```
+    import org.sameersingh.scalaplot.Implicits._
+    import org.sameersingh.scalaplot.MemXYSeries
+    import org.sameersingh.scalaplot.XYData
+    import org.sameersingh.scalaplot.XYChart
+    import org.sameersingh.scalaplot.gnuplot.GnuplotPlotter;
+    ```
+1. Investigate on internet how to transform a CSV file into a Dataframe in Spark 1.6 and 
+perform the transformation.
+   - HINT: As you can see in point 5, to carry out the transformation we have imported 
+the library “com.databricks.spark.csv”.
+
+1. As the data is structured, we will use SparkSQL. The development from here can be 
+done in different ways, but, logically, the explanation of the exercise will focus on one 
+of them. In the theory part we have seen that Spark can execute SQL commands over a 
+dataset creating a virtual table using the method:
+    ```
+    df.createOrReplaceTempView("VirtualTableName")
+    ```
+1. Once we have the virtual table created, we will have to create a DataFrame with the 
+data: season and the average of the scores for that season. Look up your notes for the 
+command to execute SQL code in Spark and make the result a DataFrame. Once you 
+have the above command, it executes the SQL code necessary to obtain the data you 
+are looking for. Hints:
+   - The “season” field is in STRING format, you will need to change it to INT.
+   - The resulting DataFrame must be sorted ASCENDENT by season number.
+   - You will find the predefined SQL functions CAST and MEAN very useful.
+
+1.  Once you execute what is required in the previous point, it displays the resulting 
+Dataframe on screen to ensure that the result is as expected.
+    - `df.show()` Being df the Dataframe resulting from the execution of the previous 
+step.
+1.  As we are making a real case, we have been able to see that the data is not always in 
+the format that interests us most (we have had to change the type of STRING to INT). It 
+changes the format of the previous Dataframe to a PairRDD (RDD made up of a key 
+and a value, the key being the season number and the value being the mean score for 
+that season). You will find useful the functions seen in the theory.
+
+1.  We are now entering the final stage of the exercise and we want to create, with our 
+results, a linear plot that represents the information obtained, so that it is easier for us 
+to extract conclusions. Now we need to divide the previous RDD, so that we will store 
+in a variable Y the different seasons that we have analyzed, while we will store in a 
+variable X the average scores of those seasons. Note that the variable ‘rdd’ is the name 
+of the variable containing the PairRDD obtained in the previous step.
+    - val x =
+    - val y =
+1.  Now open a new terminal. Make sure you are on the path:"/home/cloudera" and 
+create a new folder called "docs". Use the command "mkdir" to do this.
+1.  In that same terminal, run the command: `sudo yum install gnuplot`. This command will 
+install a utility needed to perform the linear diagram.
+1.  Back at the Scala terminal, run the following code to create the linear diagram. Enter 
+each line one at a time to avoid problems. Once executed and, if everything has gone 
+well, searches for the result in the folder created in step 13.
+    ```
+    val series = new MemXYSeries(x.collect(), y.collect(), "score")
+    val data = new XYData(series)
+    val chart = new XYChart("Average Simpsons episode scores during their seasons", data)
+    output(PNG("docs/", "test"), chart)
+    ```
+    ![simpsongraph](imagenes/simpsongraph.png)
+
+
+## Module 6.1. Exercise: Spark Streaming I
+The aim of this exercise is to get started in the use of Spark Streaming and observe its qualities. 
+To do this, we will generate an execute a script in a terminal that will count the words that we 
+introduce in another terminal as simulated streaming.
+Tasks to do
+1. Visit Spark’s documentation https://spark.apache.org/docs/1.5.2/streaming-programming-guide.html and get familiar with the exercise. The aim is to do the same 
+that it says on the web in “A Quick Example” section.
+2. Take a time to navigate through the website and to explore it. When you think you are 
+ready, start the exercise.
+3. Open a new terminal and type the next command: “nc -lkv 4444”. What that command 
+does is to send everything that you write to the 4444 port.
+4. Open a new terminal and start Spark’s shell in local mode with at least 2 threads, 
+because we will need them to complete this exercise: “spark-shell --master local[2]”
+5. Now, access to the file “/usr/lib/spark/conf/log4j.properties”, and change the log level 
+to ERROR, so that you can easily see the streaming of counted words returned by your 
+script.
+6. Import the necessary classes to work with Spark Streaming
+    ```
+    import org.apache.spark.streaming.StreamingContext
+    import org.apache.spark.streaming.StreamingContext._
+    import org.apache.spark.streaming.Seconds
+    ```
+1. Create a SparkContext with a 5 seconds duration.
+    ```
+    var ssc = new StreamingContext(sc,Seconds(5))
+    ```
+2. Create a DStream to read text from the port that you type in the command “nc”, you 
+also have to type the hostname of your machine, which is “quickstart.cloudera”.
+    ```
+    var mystream = ssc.socketTextStream("localhost",4444)
+    ```
+1. Create a MapReduce, as we saw in theory, to count the number of words that appear in 
+each Stream.
+    ```
+    var words = mystream.flatMap(line => line.split("\\W"))
+    var wordCounts = words.map(x => (x, 1)).reduceByKey((x,y) => x+y)
+    ```
+1.  Print on the screen the results of each batch
+   
+    `wordCounts.print()`
+2.  Start the Streaming Context and call to “awaitTermination” to wait until the task finish
+    ```
+    ssc.start()
+    ssc.awaitTermination()
+    ```
+1.  You should see something like this:
+
+    ![likethis19](imagenes/likethis19.png)
+2.  Once you have finished, exit the terminal where the command “nc” is executed typing 
+CNTRL +C.
+1.  To run it from a script: 
+spark-shell --master local[2] -i prueba.scala
 
