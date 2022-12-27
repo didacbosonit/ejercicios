@@ -708,6 +708,7 @@ perform the transformation.</p>
 <li>HINT: As you can see in point 5, to carry out the transformation we have imported
 the library “com.databricks.spark.csv”.</li>
 </ul>
+<p><code>val df = spark.read.format(&quot;csv&quot;).option(&quot;header&quot;, &quot;true&quot;).load(&quot;C:/Users/didac.blanco/Desktop/BIT/data/simpsons.csv&quot;)</code></p>
 </li>
 <li>
 <p>As the data is structured, we will use SparkSQL. The development from here can be
@@ -715,6 +716,8 @@ done in different ways, but, logically, the explanation of the exercise will foc
 of them. In the theory part we have seen that Spark can execute SQL commands over a
 dataset creating a virtual table using the method:</p>
 <pre><code>df.createOrReplaceTempView(&quot;VirtualTableName&quot;)
+</code></pre>
+<pre><code>df.createOrReplaceTempView(&quot;simpsons&quot;)
 </code></pre>
 </li>
 <li>
@@ -728,13 +731,15 @@ are looking for. Hints:</p>
 <li>The resulting DataFrame must be sorted ASCENDENT by season number.</li>
 <li>You will find the predefined SQL functions CAST and MEAN very useful.</li>
 </ul>
+<pre><code>val dfSeasonRating = spark.sql(&quot;SELECT CAST(season AS INT), ROUND(MEAN(imdb_rating), 2) as avg_rating FROM simpsons GROUP BY season ORDER BY season ASC&quot;)
+</code></pre>
 </li>
 <li>
 <p>Once you execute what is required in the previous point, it displays the resulting
 Dataframe on screen to ensure that the result is as expected.</p>
 <ul>
-<li><code>df.show()</code> Being df the Dataframe resulting from the execution of the previous
-step.</li>
+<li><code>df.show()</code></li>
+<li>Being df the Dataframe resulting from the execution of the previous step.</li>
 </ul>
 </li>
 <li>

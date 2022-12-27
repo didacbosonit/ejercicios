@@ -676,12 +676,17 @@ perform the transformation.
    - HINT: As you can see in point 5, to carry out the transformation we have imported 
 the library “com.databricks.spark.csv”.
 
+    `val df = spark.read.format("csv").option("header", "true").load("C:/Users/didac.blanco/Desktop/BIT/data/simpsons.csv")`
+
 1. As the data is structured, we will use SparkSQL. The development from here can be 
 done in different ways, but, logically, the explanation of the exercise will focus on one 
 of them. In the theory part we have seen that Spark can execute SQL commands over a 
 dataset creating a virtual table using the method:
     ```
     df.createOrReplaceTempView("VirtualTableName")
+    ```
+    ```
+    df.createOrReplaceTempView("simpsons")
     ```
 1. Once we have the virtual table created, we will have to create a DataFrame with the 
 data: season and the average of the scores for that season. Look up your notes for the 
@@ -692,10 +697,14 @@ are looking for. Hints:
    - The resulting DataFrame must be sorted ASCENDENT by season number.
    - You will find the predefined SQL functions CAST and MEAN very useful.
 
+    ```
+    val dfSeasonRating = spark.sql("SELECT CAST(season AS INT), ROUND(MEAN(imdb_rating), 2) as avg_rating FROM simpsons GROUP BY season ORDER BY season ASC")
+    ```
+
 1.  Once you execute what is required in the previous point, it displays the resulting 
 Dataframe on screen to ensure that the result is as expected.
-    - `df.show()` Being df the Dataframe resulting from the execution of the previous 
-step.
+    - `df.show()` 
+    - Being df the Dataframe resulting from the execution of the previous step.
 1.  As we are making a real case, we have been able to see that the data is not always in 
 the format that interests us most (we have had to change the type of STRING to INT). It 
 changes the format of the previous Dataframe to a PairRDD (RDD made up of a key 
