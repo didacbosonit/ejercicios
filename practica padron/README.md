@@ -232,51 +232,207 @@ Una vez finalizados todos estos apartados deberíamos tener una tabla padron_txt
 
 ## 4 - Sobre tablas particionadas
 
+> Para poder realizar los siguientes apartados, he tenido que editar el archivo csv con la función buscar y reemplazar, cambiando todas las 'ñ' por 'nh'.
+> Para hacer una query en impala, no se puede hacer sobre una query creada con serdepropierties (sí con un CTAS sobre esta)
+
 1. Crear tabla (Hive) padron_particionado particionada por campos DESC_DISTRITO y DESC_BARRIO cuyos datos estén en formato parquet.
 
-```sql
-CREATE TABLE padron_particionado (
-  COD_DISTRITO INT,
-  COD_DIST_BARRIO INT,
-  COD_BARRIO INT,
-  COD_DIST_SECCION INT,
-  COD_SECCION INT,
-  COD_EDAD_INT INT,
-  ESPANOLESHOMBRES INT,
-  ESPANOLESMUJERES INT,
-  EXTRANJEROSHOMBRES INT,
-  EXTRANJEROSMUJERES INT,
-  FX_CARGA STRING,
-  FX_DATOS_INI STRING,
-  FX_DATOS_FIN STRING
-)
-PARTITIONED BY (DESC_DISTRITO STRING, DESC_BARRIO STRING)
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-WITH SERDEPROPERTIES (
-   "separatorChar" = "\073",
-   "quoteChar"     = "\"",
-   "skip.header.line.count" = "1"
-)
-STORED AS PARQUET;
-```
+    ```sql
+    CREATE TABLE padron_particionado (
+    COD_DISTRITO INT,
+    COD_DIST_BARRIO INT,
+    COD_BARRIO INT,
+    COD_DIST_SECCION INT,
+    COD_SECCION INT,
+    COD_EDAD_INT INT,
+    ESPANOLESHOMBRES INT,
+    ESPANOLESMUJERES INT,
+    EXTRANJEROSHOMBRES INT,
+    EXTRANJEROSMUJERES INT,
+    FX_CARGA STRING,
+    FX_DATOS_INI STRING,
+    FX_DATOS_FIN STRING
+    )
+    PARTITIONED BY (DESC_DISTRITO STRING, DESC_BARRIO STRING)
+    STORED AS PARQUET;
+    ```
 
 2. Insertar datos (en cada partición) dinámicamente (con Hive) en la tabla recién creada a partir de un select de la tabla padron_parquet_2.
 
+    > Para la sentencia INSERT OVERWRITE hace falta escribir esto antes en Hive
     ```sql
     SET hive.exec.dynamic.partition=true;
     SET hive.exec.dynamic.partition.mode=non-strict;
     SET hive.enforce.bucketing =true;​
+    ```
 
+    ```sql
     INSERT OVERWRITE TABLE padron_particionado PARTITION(DESC_DISTRITO, DESC_BARRIO)
-    SELECT COD_DISTRITO, COD_DIST_BARRIO, COD_BARRIO, COD_DIST_SECCION, COD_SECCION, COD_EDAD_INT, ESPANOLESHOMBRES, ESPANOLESMUJERES, EXTRANJEROSHOMBRES, EXTRANJEROSMUJERES, FX_CARGA, FX_DATOS_INI, FX_DATOS_FIN, DESC_DISTRITO, DESC_BARRIO from  padron_parquet;
+    SELECT COD_DISTRITO, COD_DIST_BARRIO, COD_BARRIO, COD_DIST_SECCION, COD_SECCION, COD_EDAD_INT, ESPANOLESHOMBRES, ESPANOLESMUJERES, EXTRANJEROSHOMBRES, EXTRANJEROSMUJERES, FX_CARGA, FX_DATOS_INI, FX_DATOS_FIN, DESC_DISTRITO, DESC_BARRIO from padron_parquet;
     ```
 
 3. Hacer invalidate metadata en Impala de la base de datos padron_particionado.
 
+    ![invalidateparticionado](imagenes/invmet%20particionado.png)
+
 4. Calcular el total de EspanolesHombres, EspanolesMujeres, ExtranjerosHombres y ExtranjerosMujeres agrupado por DESC_DISTRITO y DESC_BARRIO para los distritos CENTRO, LATINA, CHAMARTIN, TETUAN, VICALVARO y BARAJAS.
+
+    ```sql
+    SELECT DESC_DISTRITO, DESC_BARRIO,
+        SUM(EspanolesHombres) AS EspanolesHombres,
+        SUM(EspanolesMujeres) AS EspanolesMujeres,
+        SUM(ExtranjerosHombres) AS ExtranjerosHombres,
+        SUM(ExtranjerosMujeres) AS ExtranjerosMujeres
+    FROM padron_particionado
+    WHERE DESC_DISTRITO IN ('CENTRO', 'LATINA', 'CHAMARTIN', 'TETUAN', 'VICALVARO', 'BARAJAS')
+    GROUP BY DESC_DISTRITO, DESC_BARRIO
+    ```
+
+    ```sql
+    SELECT DESC_DISTRITO, DESC_BARRIO,
+        SUM(EspanolesHombres) AS EspanolesHombres,
+        SUM(EspanolesMujeres) AS EspanolesMujeres,
+        SUM(ExtranjerosHombres) AS ExtranjerosHombres,
+        SUM(ExtranjerosMujeres) AS ExtranjerosMujeres
+    FROM padron_parquet
+    WHERE DESC_DISTRITO IN ('CENTRO', 'LATINA', 'CHAMARTIN', 'TETUAN', 'VICALVARO', 'BARAJAS')
+    GROUP BY DESC_DISTRITO, DESC_BARRIO
+    ```
 
 5. Llevar a cabo la consulta en Hive en las tablas padron_parquet y padron_partitionado. ¿Alguna conclusión?
 
+    >tiempo de ejecución en padron_parquet: 28.716 seconds, en padron_particionado: 35.583 seconds. Lo cual parece raro, repitiendo particionado baja a 29.268 seconds.
+
 6. Llevar a cabo la consulta en Impala en las tablas padron_parquet y padron_particionado. ¿Alguna conclusión?
 
+    >tiempo de ejecución en padron_parquet: 0.32s, en padron_particionado: 0.60s.
+
 7. Hacer consultas de agregación (Max, Min, Avg, Count) tal cual el ejemplo anterior con las 3 tablas (padron_txt_2, padron_parquet_2 y padron_particionado) y comparar rendimientos tanto en Hive como en Impala y sacar conclusiones.
+
+    ```sql
+    SELECT DESC_DISTRITO, DESC_BARRIO,
+        max(EspanolesHombres) AS EspanolesHombres
+    FROM padron_particionado
+    WHERE DESC_DISTRITO IN ('CENTRO', 'LATINA', 'CHAMARTIN', 'TETUAN', 'VICALVARO', 'BARAJAS')
+    GROUP BY DESC_DISTRITO, DESC_BARRIO
+    ```
+
+    ```sql
+    SELECT DESC_DISTRITO, DESC_BARRIO,
+        max(EspanolesHombres) AS EspanolesHombres
+    FROM padron_parquet
+    WHERE DESC_DISTRITO IN ('CENTRO', 'LATINA', 'CHAMARTIN', 'TETUAN', 'VICALVARO', 'BARAJAS')
+    GROUP BY DESC_DISTRITO, DESC_BARRIO
+    ```
+
+    |        | parquet | particion |
+    |--------|---------|-----------|
+    | Hive   | 25.068  | 28.002    |
+    | Impala | 0.27    | 0.61      |
+
+    > Por alguna razón, las tablas particionadas no han rendido como se esperaba. Algún problema de optimización habrá en este caso concreto pero lo normal es que funcione mejor.
+
+## 5. Trabajando con tablas en HDFS
+
+A continuación vamos a hacer una inspección de las tablas, tanto externas (no gestionadas) como internas (gestionadas). Este apartado se hará si se tiene acceso y conocimiento previo sobre cómo insertar datos en HDFS.
+
+1. Crear un documento de texto en el almacenamiento local que contenga una secuencia de números distribuidos en filas y separados por columnas, llámalo datos1 y que sea por ejemplo: 
+   
+   1,2,3 
+   4,5,6 
+   7,8,9
+
+2. Crear un segundo documento (datos2) con otros números pero la misma estructura.
+   ![datostxt](imagenes/datostxt.png)
+3. Crear un directorio en HDFS con un nombre a placer, por ejemplo, /test. Si estás en una máquina Cloudera tienes que asegurarte de que el servicio HDFS está activo ya que puede no iniciarse al encender la máquina (puedes hacerlo desde el Cloudera Manager). A su vez, en las máquinas Cloudera es posible (dependiendo de si usamos Hive desde consola o desde Hue) que no tengamos permisos para crear directorios en HDFS salvo en el directorio /user/cloudera.
+
+    `hdfs dfs -mkdir /user/cloudera/testpadron`
+4. Mueve tu fichero datos1 al directorio que has creado en HDFS con un comando desde consola.
+
+    `hdfs dfs -put /home/cloudera/Desktop/datos1 /user/cloudera/testpadron/`
+5. Desde Hive, crea una nueva database por ejemplo con el nombre numeros. Crea una tabla que no sea externa y sin argumento location con tres columnas numéricas, campos separados por coma y delimitada por filas. La llamaremos por ejemplo numeros_tbl.
+
+    ```sql
+    CREATE DATABASE numeros;
+    USE numeros;
+    ```
+
+    ```sql
+    CREATE TABLE numeros_tbl (col1 INT, col2 INT, col3 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+    ```
+6. Carga los datos de nuestro fichero de texto datos1 almacenado en HDFS en la tabla de Hive. Consulta la localización donde estaban anteriormente los datos almacenados. ¿Siguen estando ahí? ¿Dónde están?. Borra la tabla, ¿qué ocurre con los datos almacenados en HDFS?
+   1. El archivo ya no está en /user/cloudera/testpadron/
+   2. escribiendo en hive `DESCRIBE FORMATTED numeros_tbl;` obtenemos la información que queremos. Los datos se encuentran en `hdfs://quickstart.cloudera:8020/user/hive/warehouse/numeros.db/numeros_tbl`
+        ![hdfsloc](imagenes/hdfsloc.png)
+   3. después de borrar la tabla, los datos no se encuentran en hdfs ya
+7. Vuelve a mover el fichero de texto datos1 desde el almacenamiento local al directorio anterior en HDFS.
+   
+8. Desde Hive, crea una tabla externa sin el argumento location. Y carga datos1 (desde HDFS) en ella. ¿A dónde han ido los datos en HDFS? Borra la tabla ¿Qué ocurre con los datos en hdfs?
+
+    ```sql
+    CREATE EXTERNAL TABLE numeros_tbl_externa (col1 INT, col2 INT, col3 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+    ```
+    1. esta vez los datos se mantienen en la carpeta `/user/cloudera/testpadron/datos1`
+    2. al borrar la tabla, los datos siguen también en la warehouse, es decir al finalizar el proceso los datos se mantienen en ambos directorios
+9.  Borra el fichero datos1 del directorio en el que estén. Vuelve a insertarlos en el directorio que creamos inicialmente (/test). Vuelve a crear la tabla numeros desde hive pero ahora de manera externa y con un argumento location que haga referencia al directorio donde los hayas situado en HDFS (/test). No cargues los datos de ninguna manera explícita. Haz una consulta sobre la tabla que acabamos de crear que muestre todos los registros. ¿Tiene algún contenido?
+
+    ![rmput](imagenes/rmput.png)
+
+    ```sql
+    CREATE EXTERNAL TABLE numeros_tbl_externa (col1 INT, col2 INT, col3 INT)
+    ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+    LOCATION '/user/cloudera/testpadron/';
+    ```
+    ![externaloc](imagenes/externaloc.png)
+
+    >Como vemos, no hace falta definir de manera explícita los datos
+10. Inserta el fichero de datos creado al principio, "datos2" en el mismo directorio de HDFSS que "datos1". Vuelve a hacer la consulta anterior sobre la misma tabla. ¿Qué salida muestra?
+
+    >La salida de ahora es la unión de las dos tablas, es decir algo así
+
+    |    |    |    |
+    |----|----|----|
+    | 1  | 2  | 3  |
+    | 4  | 5  | 6  |
+    | 7  | 8  | 9  |
+    | 10 | 11 | 12 |
+    | 20 | 21 | 22 |
+    | 30 | 31 | 32 |
+11. Extrae conclusiones de todos estos anteriores apartados.
+
+    En general, podemos concluir que trabajar con tablas en HDFS nos permite tener un almacenamiento distribuido y seguro para nuestros datos. Al crear tablas internas en Hive, los datos son almacenados directamente en HDFS y están gestionados por Hive. Si borramos la tabla de Hive, los datos también son eliminados de HDFS. En cambio, al crear tablas externas en Hive, los datos son almacenados en HDFS pero no son gestionados por Hive, lo que también nos permite editar las tablas desde fuera de Hive. Si borramos la tabla de Hive, los datos no son eliminados de HDFS y siguen estando disponibles para ser utilizados por otras tablas externas o aplicaciones. Además, al crear tablas externas podemos especificar una ubicación en HDFS donde estén almacenados los datos, lo que nos permite tener un control más preciso sobre su ubicación y uso.
+
+## 6. Un poquito de Spark
+
+La siguiente sección de la práctica se abordará si ya se tienen suficientes conocimientos de 
+Spark, en concreto de el manejo de DataFrames, y el manejo de tablas de Hive a través de 
+Spark.sql.
+
+
+1. Comenzamos realizando la misma práctica que hicimos en Hive en Spark, importando el csv. Sería recomendable intentarlo con opciones que quiten las "" de los campos, que ignoren los espacios innecesarios en los campos, que sustituyan los valores vacíos por 0 y que infiera el esquema.
+
+    ```scala
+    val df = sqlContext.read.format("com.databricks.spark.csv").option("quote", "").option("ignoreLeadingWhiteSpace", "true").option("ignoreTrailingWhiteSpace", "true").option("nullValue", "0").option("sep", ";").load("/home/cloudera/ejercicios/padron/estadisticas202212.csv")
+    ```
+    >No fucniona correctamente, hacemos el apartado 2.
+2. De manera alternativa también se puede importar el csv con menos tratamiento en la importación y hacer todas las modificaciones para alcanzar el mismo estado de limpieza de los datos con funciones de Spark.
+3. Enumera todos los barrios diferentes.
+4. Crea una vista temporal de nombre "padron" y a través de ella cuenta el número de barrios diferentes que hay.
+5. Crea una nueva columna que muestre la longitud de los campos de la columna DESC_DISTRITO y que se llame "longitud".
+6. Crea una nueva columna que muestre el valor 5 para cada uno de los registros de la tabla. 
+7. Borra esta columna.
+8. Particiona el DataFrame por las variables DESC_DISTRITO y DESC_BARRIO.
+9.  Almacénalo en caché. Consulta en el puerto 4040 (UI de Spark) de tu usuario local el estado de los rdds almacenados.
+10. Lanza una consulta contra el DF resultante en la que muestre el número total de "espanoleshombres", "espanolesmujeres", "extranjeroshombres" y "extranjerosmujeres" para cada barrio de cada distrito. Las columnas distrito y barrio deben ser las primeras en aparecer en el show. Los resultados deben estar ordenados en orden de más a menos según la columna "extranjerosmujeres" y desempatarán por la columna "extranjeroshombres".
+11. Elimina el registro en caché.
+12. Crea un nuevo DataFrame a partir del original que muestre únicamente una columna con DESC_BARRIO, otra con DESC_DISTRITO y otra con el número total de "espanoleshombres" residentes en cada distrito de cada barrio. Únelo (con un join) con el DataFrame original a través de las columnas en común.
+13. Repite la función anterior utilizando funciones de ventana. (over(Window.partitionBy.....)).
+14. Mediante una función Pivot muestra una tabla (que va a ser una tabla de contingencia) que contenga los valores totales (la suma de valores) de espanolesmujeres para cada distrito y en cada rango de edad (COD_EDAD_INT). Los distritos incluidos deben ser únicamente CENTRO, BARAJAS y RETIRO y deben figurar como columnas. El aspecto debe ser similar a este:
+![ej14](imagenes/ej14.png)
+1.  Utilizando este nuevo DF, crea 3 columnas nuevas que hagan referencia a qué porcentaje de la suma de "espanolesmujeres" en los tres distritos para cada rango de edad representa cada uno de los tres distritos. Debe estar redondeada a 2 decimales. Puedes imponerte la condición extra de no apoyarte en ninguna columna auxiliar creada para el caso.
+2.  Guarda el archivo csv original particionado por distrito y por barrio (en ese orden) en un directorio local. Consulta el directorio para ver la estructura de los ficheros y comprueba que es la esperada.
+3.  Haz el mismo guardado pero en formato parquet. Compara el peso del archivo con el resultado anterior.
+
+## ¿Y si juntamos Spark y Hive?
+
+Por último, prueba a hacer los ejercicios sugeridos en la parte de Hive con el csv "Datos Padrón" (incluyendo la importación con Regex) utilizando desde Spark EXCLUSIVAMENTE sentencias spark.sql, es decir, importar los archivos desde local directamente como tablasde Hive y haciendo todas las consultas sobre estas tablas sin transformarlas en ningún momento en DataFrames ni DataSets.
