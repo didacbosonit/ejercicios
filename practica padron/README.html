@@ -570,7 +570,8 @@ Spark.sql.</p>
 <ol>
 <li>
 <p>Comenzamos realizando la misma práctica que hicimos en Hive en Spark, importando el csv. Sería recomendable intentarlo con opciones que quiten las &quot;&quot; de los campos, que ignoren los espacios innecesarios en los campos, que sustituyan los valores vacíos por 0 y que infiera el esquema.</p>
-<pre><code class="language-scala"><span class="hljs-keyword">val</span> df = sqlContext.read.format(<span class="hljs-string">&quot;com.databricks.spark.csv&quot;</span>).option(<span class="hljs-string">&quot;quote&quot;</span>, <span class="hljs-string">&quot;&quot;</span>).option(<span class="hljs-string">&quot;ignoreLeadingWhiteSpace&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>).option(<span class="hljs-string">&quot;ignoreTrailingWhiteSpace&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>).option(<span class="hljs-string">&quot;nullValue&quot;</span>, <span class="hljs-string">&quot;0&quot;</span>).option(<span class="hljs-string">&quot;sep&quot;</span>, <span class="hljs-string">&quot;;&quot;</span>).load(<span class="hljs-string">&quot;/home/cloudera/ejercicios/padron/estadisticas202212.csv&quot;</span>)
+<pre><code class="language-scala"><span class="hljs-keyword">val</span> path = <span class="hljs-string">&quot;/home/cloudera/ejercicios/padron/estadisticas202212.csv&quot;</span>
+<span class="hljs-keyword">val</span> df = sqlContext.read.format(<span class="hljs-string">&quot;com.databricks.spark.csv&quot;</span>).option(<span class="hljs-string">&quot;quote&quot;</span>, <span class="hljs-string">&quot;&quot;</span>).option(<span class="hljs-string">&quot;ignoreLeadingWhiteSpace&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>).option(<span class="hljs-string">&quot;ignoreTrailingWhiteSpace&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>).option(<span class="hljs-string">&quot;nullValue&quot;</span>, <span class="hljs-string">&quot;0&quot;</span>).option(<span class="hljs-string">&quot;sep&quot;</span>, <span class="hljs-string">&quot;;&quot;</span>).load(path)
 </code></pre>
 <blockquote>
 <p>No fucniona correctamente, hacemos el apartado 2.</p>
@@ -578,56 +579,138 @@ Spark.sql.</p>
 </li>
 <li>
 <p>De manera alternativa también se puede importar el csv con menos tratamiento en la importación y hacer todas las modificaciones para alcanzar el mismo estado de limpieza de los datos con funciones de Spark.</p>
+<p>lo hacemos en windows (spark 3.2.)</p>
+<pre><code>val path = &quot;C:/Users/didac.blanco/Documents/recursos/BIG DATA/curso/practica padron/estadisticas202212.csv&quot;
+val df = spark.read.option(&quot;inferSchema&quot;, &quot;true&quot;)
+    .option(&quot;header&quot;, &quot;true&quot;)
+    .option(&quot;sep&quot;, &quot;;&quot;)
+    .csv(path)
+
+val dfTrim = df.select(df.columns.map(c=&gt;trim(col(c)).alias(c)): _*)
+
+val padron = dfTrim.select(dfTrim.columns.map(c =&gt; when(col(c).isNull, 0).otherwise(col(c)).alias(c)): _*)
+</code></pre>
 </li>
 <li>
 <p>Enumera todos los barrios diferentes.</p>
+<pre><code>val barrios = padron.select(&quot;DESC_BARRIO&quot;).distinct().collect().toList
+</code></pre>
 </li>
 <li>
 <p>Crea una vista temporal de nombre &quot;padron&quot; y a través de ella cuenta el número de barrios diferentes que hay.</p>
+<pre><code>padron.createOrReplaceTempView(&quot;padron&quot;)
+spark.sql(&quot;SELECT COUNT(DISTINCT DESC_BARRIO) FROM padron&quot;).show()
+</code></pre>
 </li>
 <li>
 <p>Crea una nueva columna que muestre la longitud de los campos de la columna DESC_DISTRITO y que se llame &quot;longitud&quot;.</p>
+<pre><code>val padronLongitud = padron.withColumn(&quot;longitud&quot;, length(col(&quot;DESC_DISTRITO&quot;)))
+</code></pre>
 </li>
 <li>
 <p>Crea una nueva columna que muestre el valor 5 para cada uno de los registros de la tabla.</p>
+<pre><code>val padronNuevaColumna = padronLongitud.withColumn(&quot;nueva_columna&quot;, lit(5))
+</code></pre>
 </li>
 <li>
 <p>Borra esta columna.</p>
+<pre><code>val padronDrop = padronNuevaColumna.drop(&quot;nw&quot;)
+</code></pre>
 </li>
 <li>
 <p>Particiona el DataFrame por las variables DESC_DISTRITO y DESC_BARRIO.</p>
+<pre><code>val padronParticionado = padron.repartition(col(&quot;DESC_DISTRITO&quot;), col(&quot;DESC_BARRIO&quot;))
+</code></pre>
 </li>
 <li>
 <p>Almacénalo en caché. Consulta en el puerto 4040 (UI de Spark) de tu usuario local el estado de los rdds almacenados.</p>
+<blockquote>
+<p>No sale nada (DUDA)</p>
+</blockquote>
 </li>
 <li>
 <p>Lanza una consulta contra el DF resultante en la que muestre el número total de &quot;espanoleshombres&quot;, &quot;espanolesmujeres&quot;, &quot;extranjeroshombres&quot; y &quot;extranjerosmujeres&quot; para cada barrio de cada distrito. Las columnas distrito y barrio deben ser las primeras en aparecer en el show. Los resultados deben estar ordenados en orden de más a menos según la columna &quot;extranjerosmujeres&quot; y desempatarán por la columna &quot;extranjeroshombres&quot;.</p>
+<pre><code>val resultado = padronParticionado
+.select(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;, &quot;ESPANOLESHOMBRES&quot;, &quot;ESPANOLESMUJERES&quot;, &quot;EXTRANJEROSHOMBRES&quot;, &quot;EXTRANJEROSMUJERES&quot;)
+.groupBy(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;)
+.agg(
+    sum(&quot;ESPANOLESHOMBRES&quot;).alias(&quot;espanoleshombres&quot;),
+    sum(&quot;ESPANOLESMUJERES&quot;).alias(&quot;espanolesmujeres&quot;),
+    sum(&quot;EXTRANJEROSHOMBRES&quot;).alias(&quot;extranjeroshombres&quot;),
+    sum(&quot;EXTRANJEROSMUJERES&quot;).alias(&quot;extranjerosmujeres&quot;)
+)
+.sort(desc(&quot;extranjerosmujeres&quot;), desc(&quot;extranjeroshombres&quot;))
+
+resultado.show()
+</code></pre>
 </li>
 <li>
 <p>Elimina el registro en caché.</p>
+<p><code>padronParticionado.unpersist()</code></p>
 </li>
 <li>
 <p>Crea un nuevo DataFrame a partir del original que muestre únicamente una columna con DESC_BARRIO, otra con DESC_DISTRITO y otra con el número total de &quot;espanoleshombres&quot; residentes en cada distrito de cada barrio. Únelo (con un join) con el DataFrame original a través de las columnas en común.</p>
+<pre><code>val nuevoDF = padron
+.select(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;, &quot;ESPANOLESHOMBRES&quot;)
+.groupBy(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;)
+.agg(sum(&quot;ESPANOLESHOMBRES&quot;).alias(&quot;espanoleshombres&quot;))
+
+val resultado = padron.join(nuevoDF, Seq(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;))
+</code></pre>
 </li>
 <li>
 <p>Repite la función anterior utilizando funciones de ventana. (over(Window.partitionBy.....)).</p>
+<pre><code>import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions.Window
+val nuevoDF = padron
+.select(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;, &quot;ESPANOLESHOMBRES&quot;)
+.withColumn(&quot;espanoleshombres&quot;, sum(&quot;ESPANOLESHOMBRES&quot;)
+.over(Window.partitionBy(&quot;DESC_DISTRITO&quot;, &quot;DESC_BARRIO&quot;)))
+</code></pre>
 </li>
 <li>
 <p>Mediante una función Pivot muestra una tabla (que va a ser una tabla de contingencia) que contenga los valores totales (la suma de valores) de espanolesmujeres para cada distrito y en cada rango de edad (COD_EDAD_INT). Los distritos incluidos deben ser únicamente CENTRO, BARAJAS y RETIRO y deben figurar como columnas. El aspecto debe ser similar a este:
 <img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\practica padron\imagenes\ej14.png" alt="ej14"></p>
+<pre><code>import org.apache.spark.sql.types.IntegerType
+val resultado = padron
+.filter($&quot;DESC_DISTRITO&quot;.isin(&quot;CENTRO&quot;, &quot;BARAJAS&quot;, &quot;RETIRO&quot;))
+.select(col(&quot;COD_EDAD_INT&quot;).cast(IntegerType).alias(&quot;COD_EDAD_INT&quot;), col(&quot;DESC_DISTRITO&quot;), col(&quot;ESPANOLESMUJERES&quot;))
+.groupBy(&quot;COD_EDAD_INT&quot;)
+.pivot(&quot;DESC_DISTRITO&quot;)
+.agg(sum(&quot;ESPANOLESMUJERES&quot;).alias(&quot;espanolesmujeres&quot;))
+.orderBy(&quot;COD_EDAD_INT&quot;)
+
+resultado.show()
+</code></pre>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\practica padron\imagenes\pivot.png" alt="pivot"></p>
 </li>
 <li>
 <p>Utilizando este nuevo DF, crea 3 columnas nuevas que hagan referencia a qué porcentaje de la suma de &quot;espanolesmujeres&quot; en los tres distritos para cada rango de edad representa cada uno de los tres distritos. Debe estar redondeada a 2 decimales. Puedes imponerte la condición extra de no apoyarte en ninguna columna auxiliar creada para el caso.</p>
+<pre><code>val resultadoConPorcentajes = resultado
+.withColumn(&quot;porcentaje_centro&quot;, round(col(&quot;CENTRO&quot;) / (col(&quot;CENTRO&quot;)+col(&quot;BARAJAS&quot;)+col(&quot;RETIRO&quot;)), 2))
+.withColumn(&quot;porcentaje_barajas&quot;, round(col(&quot;BARAJAS&quot;) / (col(&quot;CENTRO&quot;)+col(&quot;BARAJAS&quot;)+col(&quot;RETIRO&quot;)), 2))
+.withColumn(&quot;porcentaje_retiro&quot;, round(col(&quot;RETIRO&quot;) / (col(&quot;CENTRO&quot;)+col(&quot;BARAJAS&quot;)+col(&quot;RETIRO&quot;)), 2))
+
+resultadoConPorcentajes.show()
+</code></pre>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\practica padron\imagenes\porcentajes.png" alt="porcentajes"></p>
 </li>
 <li>
 <p>Guarda el archivo csv original particionado por distrito y por barrio (en ese orden) en un directorio local. Consulta el directorio para ver la estructura de los ficheros y comprueba que es la esperada.</p>
+<pre><code>val outDir = &quot;C:/Users/didac.blanco/Documents/recursos/BIG DATA/curso/practica padron&quot;
+val outputDF = padron.repartition(col(&quot;DESC_DISTRITO&quot;),col(&quot;DESC_BARRIO&quot;))
+outputDF.write.csv(outDir)
+</code></pre>
+<p><img src="file:///c:\Users\didac.blanco\Documents\recursos\BIG DATA\curso\practica padron\imagenes\output.png" alt="output"></p>
 </li>
 <li>
 <p>Haz el mismo guardado pero en formato parquet. Compara el peso del archivo con el resultado anterior.</p>
+<p>el resultado es parecido al anterior, sin embargo ocupa unas 50 veces menos</p>
 </li>
 </ol>
 <h2 id="y-si-juntamos-spark-y-hive">¿Y si juntamos Spark y Hive?</h2>
 <p>Por último, prueba a hacer los ejercicios sugeridos en la parte de Hive con el csv &quot;Datos Padrón&quot; (incluyendo la importación con Regex) utilizando desde Spark EXCLUSIVAMENTE sentencias spark.sql, es decir, importar los archivos desde local directamente como tablasde Hive y haciendo todas las consultas sobre estas tablas sin transformarlas en ningún momento en DataFrames ni DataSets.</p>
+<p><code>spark.sql(&lt;\&lt;query&gt;&gt;).show()</code></p>
 
         <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
         
