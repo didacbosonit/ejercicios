@@ -1,4 +1,15 @@
 # Práctica Hive + Impala + HDFS + Spark
+
+- [Práctica Hive + Impala + HDFS + Spark](#práctica-hive--impala--hdfs--spark)
+  - [1 - Creación de tablas en formato texto.](#1---creación-de-tablas-en-formato-texto)
+  - [2 - Investigamos el formato columnar parquet.](#2---investigamos-el-formato-columnar-parquet)
+  - [3 - Juguemos con Impala](#3---juguemos-con-impala)
+  - [4 - Sobre tablas particionadas](#4---sobre-tablas-particionadas)
+  - [5. Trabajando con tablas en HDFS](#5-trabajando-con-tablas-en-hdfs)
+  - [6. Un poquito de Spark](#6-un-poquito-de-spark)
+  - [¿Y si juntamos Spark y Hive?](#y-si-juntamos-spark-y-hive)
+
+
 A partir de los datos (CSV) de Padrón de Madrid (https://datos.madrid.es/egob/catalogo/200076-1-padron.csv) llevar a cabo lo siguiente:
 ## 1 - Creación de tablas en formato texto.
 1. Crear Base de datos "datos_padron"
