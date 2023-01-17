@@ -121,6 +121,7 @@ Hence hardcoded them here.
 </code></pre>
 <pre><code class="language-scala"><span class="hljs-keyword">val</span> logs = spark.read.text(<span class="hljs-string">&quot;file:///C:/Users/didac.blanco/Documents/recursos/BIG DATA/repo ejercicios/nasa logs/logs&quot;</span>)
 </code></pre>
+<p>Esta carpeta no existe en git debido al peso de los archivos</p>
 <p>realizamos la extracción mediante regex:</p>
 <pre><code class="language-scala"><span class="hljs-keyword">val</span> regex = <span class="hljs-string">&quot;^([^ ]+) - - \\[(\\d{2}/\\w{3}/\\d{4}:\\d{2}:\\d{2}:\\d{2}).*?\\] \&quot;(.*?) (.*?)(HTTP/.*?) *?\&quot; (.+?) (.*+)&quot;</span>
 <span class="hljs-keyword">val</span> df = logs.select(

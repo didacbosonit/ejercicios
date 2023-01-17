@@ -8,6 +8,7 @@ import org.apache.spark.sql.functions._
 ```scala
 val logs = spark.read.text("file:///C:/Users/didac.blanco/Documents/recursos/BIG DATA/repo ejercicios/nasa logs/logs")
 ```
+Esta carpeta no existe en git debido al peso de los archivos
 
 realizamos la extracción mediante regex:
 ```scala
